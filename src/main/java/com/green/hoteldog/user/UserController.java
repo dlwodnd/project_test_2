@@ -1,5 +1,6 @@
 package com.green.hoteldog.user;
 
+import com.green.hoteldog.common.RedisUtil;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.user.models.UserSigninDto;
 import com.green.hoteldog.user.models.UserSigninVo;
@@ -19,10 +20,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/user")
 public class UserController {
     private final UserService service;
+    private final RedisUtil redisUtil;
+
     //유저 회원가입
     @PostMapping("/signup")
     public ResVo userSignup(@RequestBody UserSignupDto dto){
-        return service.userSignup(dto);
+        ResVo vo = service.userSignup(dto);
+        if(vo.getResult() == 1){
+            redisUtil.deleteData(dto.getUserEmail());
+        }
+        return vo;
     }
     //유저 로그인
     @PostMapping("/signin")

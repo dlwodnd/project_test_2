@@ -8,6 +8,10 @@ app:
 file:
   dir: D:/home/download/greengram4/
 spring:
+  data:
+   redis:
+    host: localhost # 임시 방편으로 로컬에서 테스트를 위해 설정
+    port: 6379
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/2nd_project

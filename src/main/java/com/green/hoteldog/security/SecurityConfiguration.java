@@ -28,6 +28,8 @@ public class SecurityConfiguration {
                                 ,"/error"
                                 ,"/err"
                                 ,"/"
+                        ,"/api/mailSend"
+                        ,"/api/mailAuthCheck/**"
                                 ,"/index.html"
                                 ,"/static/**"
                                 ,"/swagger.html"
