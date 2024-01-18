@@ -1,4 +1,4 @@
-package com.green.hoteldog.gallery.models;
+package com.green.hoteldog.board.models;
 
 import lombok.Data;
 

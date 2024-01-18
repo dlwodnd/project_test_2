@@ -1,14 +1,15 @@
-package com.green.hoteldog.gallery.models;
+package com.green.hoteldog.board.models;
 
 import lombok.Data;
 
 @Data
-public class GetSimpleGalleryVo {
-    private int galleryPk;
+public class GetSimpleBoardVo {
+    private int boardPk;
     private String title;
     private int userPk;
     private String nickname;
     private int commentsCount;
     private int favCount;
+    private int boardViewCount;
     private String createdAt;
 }

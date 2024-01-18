@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -52,5 +54,14 @@ public class UserService {
             return vo;
         }
         return null;
+    }
+    public ResVo checkNickname(String nickname){
+        List<UserEntity> userEntityList = mapper.selUserEntity();
+        for(UserEntity entity : userEntityList){
+            if(entity.getNickname().equals(nickname)){
+                return new ResVo(1);
+            }
+        }
+        return new ResVo(0);
     }
 }

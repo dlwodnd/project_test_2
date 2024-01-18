@@ -1,6 +1,7 @@
 package com.green.hoteldog.email;
 
 import com.green.hoteldog.common.RedisUtil;
+import com.green.hoteldog.common.ResVo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,20 +15,25 @@ public class MailController {
 
 
     @PostMapping("/api/mailSend")
-    public String sendEmail(@RequestBody @Valid EmailRequestDto dto){
+    public ResVo sendEmail(@RequestBody @Valid EmailRequestDto dto){
         System.out.println(dto.getEmail());
         mailSendService.joinEmail(dto.getEmail());
-        return "ok";
+        return new ResVo(1);
 
     }
     @PostMapping("/api/mailAuthCheck")
-    public String checkMail(@RequestBody @Valid EmailCheckDto dto){
+    public EmailResponseVo checkMail(@RequestBody @Valid EmailCheckDto dto){
         Boolean checked = mailSendService.CheckAuthNum(dto.getEmail(), dto.getAuthNum());
+        EmailResponseVo vo = new EmailResponseVo();
         if(checked){
-            return "ok";
+            vo.setEmail(dto.getEmail());
+            vo.setResult(1);
+            return vo;
         }
         else {
-            return "fail";
+            vo.setEmail(dto.getEmail());
+            vo.setResult(0);
+            return vo;
         }
     }
 

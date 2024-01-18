@@ -1,10 +1,10 @@
-package com.green.hoteldog.gallery.models;
+package com.green.hoteldog.board.models;
 
 import lombok.Data;
 
 @Data
-public class GetGalleryCommentsDto {
-    private int galleryPk;
+public class GetBoardCommentsDto {
+    private int boardPk;
     private int page;
     private int rowCount;
 

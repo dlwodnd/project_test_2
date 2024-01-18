@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.hoteldog.board.BoardMapper">
+    <insert id="postBoard" keyProperty="boardPk" useGeneratedKeys="true">
+        INSET INTO t_board
+        SET user_pk = #{userPk}
+            ,board_category_pk = #{gallertyCategoryPk}
+            ,title = #{title}
+            ,contents = #{contents}
+    </insert>
+    <insert id="postBoardPics">
+        INSERT INTO t_board_pics
+        (board_pk,pic)
+        VALUES
+        <foreach collection="pics" item="pic" separator=",">
+            (#{boardPk},#{pic})
+        </foreach>
+    </insert>
+    <delete id="delBoardPics">
+        DELETE FROM t_board_pics
+        WHERE board_pk = #{boardPk}
+    </delete>
+    <update id="putBoard">
+        UPDATE t_board
+        SET board_category_pk = #{boardCategoryPk}
+            ,title = #{title}
+            ,contents = #{contents}
+        WHERE board_pk = #{boardPk} AND user_pk = #{userPk}
+    </update>
+    <insert id="postFav">
+        INSERT INTO t_board_fav
+        SET user_pk = #{userPk}
+            ,board_pk = #{boardPk}
+    </insert>
+    <delete id="delFav">
+        DELETE FROM t_board_fav
+        WHERE user_pk = #{userPk} AND board_pk = #{boardPk}
+    </delete>
+    <delete id="delBoard">
+        DELETE FROM t_board
+        WHERE board_pk = #{boardPk} AND user_pk = #{userPk}
+    </delete>
+    <insert id="postComment">
+        INSERT INTO t_board_comment
+        SET user_pk = #{userPk}
+            ,board_pk = #{boardPk}
+            ,comments = #{comments}
+    </insert>
+    <delete id="delComment">
+        DELETE FROM t_board_comment
+        WHERE comment_pk = #{commentPk} AND user_pk = #{userPk}
+    </delete>
+    <select id="getBoardList">
+        SELECT A.board_pk AS boardPk
+              ,C.user_pk AS userPk
+              ,C.nick_name AS nickname
+              ,A.title
+              ,D.commentsCount
+              ,B.favCount
+              ,A.created_at AS createdAt
+              ,A.board_view_count AS boardViewCount
+        FROM t_board A
+        LEFT JOIN (SELECT board_pk, count(*) AS favCount
+              FROM t_board_fav
+              GROUP BY board_pk) B
+        ON A.board_pk = B.board_pk
+        LEFT JOIN (SELECT board_pk, count(*) AS commentsCount
+              FROM t_board_comment
+              GROUP BY board_pk) C
+        ON A.board_pk = C.board_pk
+        JOIN t_user D
+        ON A.user_pk = D.user_pk
+        <if test="boardCategoryPk != null and boardCategoryPk != 0">
+            WHERE board_category_pk = #{boardCategoryPk}
+        </if>
+    </select>
+    <select id="getBoardInfo">
+        SELECT A.board_pk AS boardPk
+                ,A.title
+                ,D.user_pk AS userPk
+                ,D.nick_name AS nickname
+                ,B.favCount
+                ,A.created_at AS createdAt
+                ,A.board_view_count AS boardViewCount
+        FROM t_board A
+        LEFT JOIN ( SELECT board_pk, count(*) AS favCount
+                    FROM t_board_fav
+                    GROUP BY board_pk) B
+        ON A.board_pk = B.board_pk
+        LEFT JOIN ( SELECT board_pk, count(*) AS commentsCount
+                    FROM t_board_comment
+                    GROUP BY board_pk) C
+        ON A.board_pk = C.board_pk
+        JOIN t_user D
+        ON A.user_pk = D.user_pk
+        WHERE A.board_pk = #{boardPk}
+    </select>
+    <select id="selBoardPics">
+        SELECT pic
+        FORM t_board_pics
+        WHERE board_pk = #{boardPk}
+    </select>
+    <select id="selBoardComments">
+        SELECT A.comment_pk AS commentPk
+            ,A.user_pk AS userPk
+            ,B.nick_name AS nickname
+            ,A.comments
+            ,A.created_at AS createdAt
+        FROM t_board_comment A
+        JOIN t_user B
+        ON A.user_pk = B.user_pk
+        WHERE A.board_pk = #{boardPk}
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <update id="boardViewCount">
+        UPDATE t_board
+        SET board_view_count = board_view_count + 1
+        WHERE board_pk = #{boardPk};
+    </update>
+</mapper>
