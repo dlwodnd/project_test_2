@@ -7,6 +7,7 @@ import com.green.hoteldog.security.AuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,32 +19,51 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ReveiwService {
     private final ReviewMapper mapper;
-    private final AuthenticationFacade authentication;
+    private final AuthenticationFacade facade;
     private final MyFileUtils fileUtils;
 
     //리뷰 등록
     public ResVo insReview(ReviewInsDto dto) {
+        try {
+            mapper.insReview(dto);
+        }catch (Exception e){
+            return new ResVo(0);
+        }
+        List<String> pics = new ArrayList<>();
+        String target = "/review/"+dto.getReviewPk();
+        for(MultipartFile file : dto.getPics()){
+            String saveFileNm = fileUtils.transferTo(file,target);
+            pics.add(saveFileNm);
+        }
         ReviewInsPicsDto picsDto = new ReviewInsPicsDto();
         picsDto.setReviewPk(dto.getReviewPk());
-        picsDto.setPics(dto.getPics());
-        int result = mapper.insReview(dto);
+        picsDto.setPics(pics);
         mapper.insReviewPics(picsDto);
-        return new ResVo(result);
+        return new ResVo(1);
     }
 
     //리뷰 전체 수정
     public ResVo putReview(ReviewUpdDto dto) {
+        dto.setUserPk(facade.getLoginUserPk());
         try {
             mapper.updReview(dto);
             mapper.delReviewPics(dto);
-            ReviewInsPicsDto picsDto = new ReviewInsPicsDto();
-            picsDto.setReviewPk(dto.getReviewPk());
-            picsDto.setPics(dto.getPics());
-            mapper.insReviewPics(picsDto);
-            return new ResVo(1);
         } catch (Exception e) {
-            return null;
+            return new ResVo(0);
         }
+        ReviewInsPicsDto picsDto = new ReviewInsPicsDto();
+        List<String> pics = new ArrayList<>();
+        String target = "/review/"+dto.getReviewPk();
+        for(MultipartFile file : dto.getPics()){
+            String saveFileNm = fileUtils.transferTo(file,target);
+            pics.add(saveFileNm);
+        }
+        picsDto.setReviewPk(dto.getReviewPk());
+        picsDto.setPics(pics);
+        mapper.insReviewPics(picsDto);
+        fileUtils.delFolderTrigger(target,pics);
+        return new ResVo(1);
+
     }
 
     //리뷰 코멘트 수정
@@ -52,7 +72,7 @@ public class ReveiwService {
             mapper.updReviewComment(dto);
             return new ResVo(1);
         } catch (Exception e) {
-            return null;
+            return new ResVo(0);
         }
     }
 
@@ -60,7 +80,7 @@ public class ReveiwService {
     public ResVo patchReviewFav(int reviewPk) {
         ReviewFavDto dto = new ReviewFavDto();
         dto.setReviewPk(reviewPk);
-        dto.setUserPk(authentication.getLoginUserPk());
+        dto.setUserPk(facade.getLoginUserPk());
 
         if (mapper.delReviewFav(dto) == 0) {
             int result = mapper.insReviewFav(dto);

@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestController
 @ControllerAdvice // 전역에 발생할 수 있는 예외를 처리해줌
 @Slf4j
-public class TestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     //모든 예외를 처리하는 메소드
     //Bean 내에서 발생하는 예외를 처리

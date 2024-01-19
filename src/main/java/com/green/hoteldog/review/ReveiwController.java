@@ -5,6 +5,7 @@ import com.green.hoteldog.review.models.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,13 +18,18 @@ public class ReveiwController {
 
     //리뷰등록
     @PostMapping
-    public ResVo postReview (@RequestBody ReviewInsDto dto){
+    public ResVo postReview (@RequestPart List<MultipartFile> pics,
+                             @RequestBody ReviewInsDto dto){
+
+        dto.setPics(pics);
         return service.insReview(dto);
     }
 
     //리뷰 전체 수정
     @PutMapping
-    public ResVo putReview (@RequestBody ReviewUpdDto dto){
+    public ResVo putReview (@RequestPart List<MultipartFile> pics,
+                            @RequestBody ReviewUpdDto dto){
+        dto.setPics(pics);
         return service.putReview(dto);
     }
 

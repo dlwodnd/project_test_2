@@ -3,7 +3,7 @@ package com.green.hoteldog.board.models;
 import lombok.Data;
 
 @Data
-public class GetBoardCommentsDto {
+public class GetBoardcommentDto {
     private int boardPk;
     private int page;
     private int rowCount;

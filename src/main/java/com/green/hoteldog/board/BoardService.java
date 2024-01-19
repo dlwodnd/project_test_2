@@ -30,7 +30,7 @@ public class BoardService {
 
         List<String> pics = new ArrayList<>();
         String target = "/board/"+dto.getBoardPk();
-        for(MultipartFile file : dto.getPisc()){
+        for(MultipartFile file : dto.getPics()){
             String saveFileNm = fileUtils.transferTo(file,target);
             pics.add(saveFileNm);
         }
@@ -115,13 +115,22 @@ public class BoardService {
         return new ResVo(result);
     }
     //댓글 삭제
+
+    //댓글 수정
+    public ResVo updateComment(PutCommentDto dto){
+        dto.setUserPk(facade.getLoginUserPk());
+        int result = mapper.updComment(dto);
+        return new ResVo(result);
+    }
+    //댓글 수정
+
     //게시글 리스트
     public List<GetSimpleBoardVo> getBoardList(GetBoardListDto dto){
         return mapper.getBoardList(dto);
     }
     //게시글 리스트
     //게시글 정보
-    public GetBoardInfoVo getBoardInfo(GetBoardCommentsDto dto){
+    public GetBoardInfoVo getBoardInfo(GetBoardcommentDto dto){
         GetBoardInfoVo vo = mapper.getBoardInfo(dto.getBoardPk());
         vo.setPics(mapper.selBoardPics(dto.getBoardPk()));
         vo.setComments(mapper.getCommentInfo(dto));
@@ -129,4 +138,17 @@ public class BoardService {
         return vo;
     }
     //게시글 정보
+
+    //로그인 유저가 작성한 게시글
+    public List<GetSimpleBoardVo> userPostingBoradList(){
+        return mapper.myPostingBoardList(facade.getLoginUserPk());
+    }
+    //로그인 유저가 작성한 게시글
+
+    //로그인 유저가 작성한 댓글
+    public List<GetUserCommentListVo> userPostingCommentList(){
+        return mapper.myPostingCommentList(facade.getLoginUserPk());
+    }
+    //로그인 유저가 작성한 댓글
+
 }

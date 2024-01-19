@@ -7,6 +7,6 @@ public class CommentInfoVo {
     private int commentPk;
     private int userPk;
     private String userNickname;
-    private String comments;
+    private String comment;
     private String createdAt;
 }

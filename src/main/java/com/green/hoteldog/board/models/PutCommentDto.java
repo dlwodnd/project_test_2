@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
-public class PostCommentDto {
+public class PutCommentDto {
     @JsonIgnore
     private int userPk;
-    private int boardPk;
+    private int commentPk;
     private String comment;
 }

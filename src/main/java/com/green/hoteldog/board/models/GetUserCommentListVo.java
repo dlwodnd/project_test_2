@@ -3,13 +3,14 @@ package com.green.hoteldog.board.models;
 import lombok.Data;
 
 @Data
-public class GetSimpleBoardVo {
+public class GetUserCommentListVo {
     private int boardPk;
     private String title;
+    private int boardCategoryPk;
+    private String categoryNm;
+    private String comment;
     private int userPk;
     private String nickname;
-    private int commentCount;
-    private int favCount;
-    private int boardViewCount;
     private String createdAt;
+    private int boardViewCount;
 }

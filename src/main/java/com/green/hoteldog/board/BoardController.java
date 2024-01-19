@@ -2,6 +2,7 @@ package com.green.hoteldog.board;
 
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.board.models.*;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -24,13 +25,14 @@ public class BoardController {
     }
     //게시글 세부내용
     @GetMapping("/view")
-    public GetBoardInfoVo getBoardDetail (GetBoardCommentsDto dto) {
+    public GetBoardInfoVo getBoardDetail (GetBoardcommentDto dto) {
         return service.getBoardInfo(dto);
     }
     //게시글 등록
     @PostMapping
-    public ResVo postBoard(@RequestPart List<MultipartFile> pics, @RequestBody PostBoardDto dto){
-        dto.setPisc(pics);
+    public ResVo postBoard(@RequestPart List<MultipartFile> pics
+                          ,@RequestBody PostBoardDto dto){
+        dto.setPics(pics);
         return service.postBoard(dto);
     }
     //게시글 수정
@@ -58,5 +60,22 @@ public class BoardController {
     @DeleteMapping("/comment")
     public ResVo deleteComment(@RequestBody DeleteCommentDto dto){
         return service.deleteComment(dto);
+    }
+
+    //댓글 수정
+    @PatchMapping("/comment")
+    public ResVo updateComment(@RequestBody PutCommentDto dto){
+        return service.updateComment(dto);
+    }
+
+    //내가 쓴 글 보기
+    @GetMapping("/my-board")
+    public List<GetSimpleBoardVo> myBoardList(){
+        return service.userPostingBoradList();
+    }
+    //내가 작성한 댓글 보기
+    @GetMapping("my-comment")
+    public List<GetUserCommentListVo> myCommentList(){
+        return service.userPostingCommentList();
     }
 }

@@ -15,5 +15,5 @@ public class PostBoardDto {
     private String title;
     private String contents;
     @JsonIgnore
-    private List<MultipartFile> pisc;
+    private List<MultipartFile> pics;
 }

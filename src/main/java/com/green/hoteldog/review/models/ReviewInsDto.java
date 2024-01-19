@@ -2,6 +2,7 @@ package com.green.hoteldog.review.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,5 +15,5 @@ public class ReviewInsDto {
     private int resPk;
     private String comment;
     private int score;
-    private List<String> pics;
+    private List<MultipartFile> pics;
 }
