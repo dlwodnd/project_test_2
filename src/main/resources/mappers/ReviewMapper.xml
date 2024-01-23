@@ -56,6 +56,7 @@
         GROUP BY A.review_pk
         WHERE A.hotel_pk = #{hotelPk}
         LIMIT #{startIdx},#{rowCount}
+
     </select>
     <select id="selReviewPics">
         SELECT review_pk AS reviewPk, pic

@@ -43,6 +43,7 @@ public class DogService {
     }
     public ResVo updUserDogPic(MultipartFile pic,int userDogPk){
         String target = "/user/"+facade.getLoginUserPk()+"/"+userDogPk;
+        fileUtils.delFolderTrigger(target);
         String saveFileNm = fileUtils.transferTo(pic,target);
         SetUserDogPicDto picDto = new SetUserDogPicDto();
         picDto.setUserPk(facade.getLoginUserPk());
@@ -53,7 +54,6 @@ public class DogService {
         }catch (Exception e){
             return new ResVo(0);
         }
-        fileUtils.delFolderTrigger(target,saveFileNm);
         return new ResVo(1);
 
 

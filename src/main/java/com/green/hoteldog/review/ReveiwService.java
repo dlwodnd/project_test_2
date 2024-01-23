@@ -31,6 +31,7 @@ public class ReveiwService {
         }
         List<String> pics = new ArrayList<>();
         String target = "/review/"+dto.getReviewPk();
+        fileUtils.delFiles(target);
         for(MultipartFile file : dto.getPics()){
             String saveFileNm = fileUtils.transferTo(file,target);
             pics.add(saveFileNm);
@@ -54,6 +55,7 @@ public class ReveiwService {
         ReviewInsPicsDto picsDto = new ReviewInsPicsDto();
         List<String> pics = new ArrayList<>();
         String target = "/review/"+dto.getReviewPk();
+        fileUtils.delFolderTrigger(target);
         for(MultipartFile file : dto.getPics()){
             String saveFileNm = fileUtils.transferTo(file,target);
             pics.add(saveFileNm);
@@ -61,7 +63,6 @@ public class ReveiwService {
         picsDto.setReviewPk(dto.getReviewPk());
         picsDto.setPics(pics);
         mapper.insReviewPics(picsDto);
-        fileUtils.delFolderTrigger(target,pics);
         return new ResVo(1);
 
     }

@@ -58,58 +58,8 @@ public class MyFileUtils {
         }
     }
 
-    public void delFolderTrigger(String relativePath, String saveFileNm) {
-        delFiles(uploadPrefixPath + relativePath, saveFileNm);
-    }
-
-    public void delFolderTrigger(String relativePath, List<String> saveFileNmList) {
-        delFiles(uploadPrefixPath + relativePath, saveFileNmList);
-    }
-
     public void delFolderTrigger(String relativePath) {
         delFiles(uploadPrefixPath + relativePath);
-    }
-
-    public void delFiles(String folderPath, String saveFileNm) {// 폴더 아래에 폴더 및 파일 삭제,보냈는 폴더는 삭제 안 함
-        File folder = new File(folderPath);
-        if (folder.exists()) {
-            File[] files = folder.listFiles();
-            for (File file : files) {//재귀호출
-                if (file.getName().equals(saveFileNm)) {
-                    continue;
-                }
-                if (file.isDirectory()) {
-                    delFiles(file.getAbsolutePath());
-                }
-                else {
-                    file.delete();
-                }
-            }
-            folder.delete();
-        }
-    }
-
-    public void delFiles(String folderPath, List<String> saveFileNmList) {// 폴더 아래에 폴더 및 파일 삭제,보냈는 폴더는 삭제 안 함
-        File folder = new File(folderPath);
-        if (folder.exists()) {
-            File[] files = folder.listFiles();
-            point:
-            for (File file : files) {
-                for(String saveFileNm : saveFileNmList){
-                    if(saveFileNm.equals(file.getName())){
-                        continue point;
-                    }
-                }
-                if (file.isDirectory()) {
-                    delFiles(file.getAbsolutePath());
-                }
-                else {
-                    file.delete();
-                }
-
-            }
-            folder.delete();
-        }
     }
 
     public void delFiles(String folderPath) {// 폴더 아래에 폴더 및 파일 삭제,보냈는 폴더는 삭제 안 함
