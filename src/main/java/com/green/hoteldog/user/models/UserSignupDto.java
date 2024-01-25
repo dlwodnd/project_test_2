@@ -6,12 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 import lombok.Data;
-import org.springframework.security.core.parameters.P;
 
 @Data
 public class UserSignupDto {
+    @JsonIgnore
+    private int userPk;
     @JsonIgnore
     private String userEmail;
     @JsonIgnore
@@ -28,4 +28,6 @@ public class UserSignupDto {
     private String phoneNum;
     @NotEmpty(message = "주소를 입력해 주세요")
     private String userAddress;
+
+    private UserAddressEntity addressEntity;
 }

@@ -2,11 +2,12 @@ package com.green.hoteldog.email;
 
 import com.green.hoteldog.common.RedisUtil;
 import com.green.hoteldog.common.ResVo;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class MailController {
 
 
     @PostMapping("/api/mailSend")
+    @Operation(summary = "이메일 인증 보내기",description = "이메일 인증 보내기")
     public ResVo sendEmail(@RequestBody @Valid EmailRequestDto dto){
         if(mailSendService.checkDuplicationEmail(dto.getEmail())){
             return new ResVo(0);//이미 db에 등록된 email
@@ -28,6 +30,7 @@ public class MailController {
 
     }
     @PostMapping("/api/mailAuthCheck")
+    @Operation(summary = "이메일 인증번호 체크",description = "이메일 인증번호 체크")
     public EmailResponseVo checkMail(@RequestBody @Valid EmailCheckDto dto){
         Boolean checked = mailSendService.checkAuthNum(dto.getEmail(), dto.getAuthNum());
         EmailResponseVo vo = new EmailResponseVo();

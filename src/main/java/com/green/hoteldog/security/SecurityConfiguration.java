@@ -1,5 +1,6 @@
 package com.green.hoteldog.security;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,7 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.requestMatchers(//세션을 사용하지 않게 세팅.
                                 "/api/user/signin"
+                                ,"/api/user/nickname-check"
                                 ,"/api/user/refresh-token"
                                 ,"/api/user/signup"
                                 ,"/error"
@@ -30,6 +32,7 @@ public class SecurityConfiguration {
                                 ,"/"
                                 ,"/api/mailSend"
                                 ,"/api/mailAuthCheck/**"
+                                ,"/api/board/**"
                                 ,"/index.html"
                                 ,"/static/**"
                                 ,"/swagger.html"
