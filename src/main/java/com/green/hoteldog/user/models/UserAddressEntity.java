@@ -8,11 +8,11 @@ public class UserAddressEntity {
     @JsonIgnore
     private int userPk;
     private String addressName;
-    private String region1depthName;
-    private String region2depthName;
-    private String region3depthName;
-    private String zoneNo;
+    private String region1DepthName;
+    private String region2DepthName;
+    private String region3DepthName;
+    private String zoneNum;
     private String x;
     private String y;
-    private String detail;
+    private String detailAddress;
 }

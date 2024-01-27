@@ -1,6 +1,5 @@
 package com.green.hoteldog.security;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,12 +26,17 @@ public class SecurityConfiguration {
                                 ,"/api/user/nickname-check"
                                 ,"/api/user/refresh-token"
                                 ,"/api/user/signup"
+                                ,"/user/signin"
+                                ,"/user/nickname-check"
+                                ,"/user/refresh-token"
+                                ,"/user/signup"
                                 ,"/error"
                                 ,"/err"
                                 ,"/"
-                                ,"/api/mailSend"
-                                ,"/api/mailAuthCheck/**"
+                                ,"/api/email/**"
+                                ,"/email/**"
                                 ,"/api/board/**"
+                                ,"/board/**"
                                 ,"/index.html"
                                 ,"/static/**"
                                 ,"/swagger.html"

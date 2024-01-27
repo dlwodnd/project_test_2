@@ -23,6 +23,7 @@ public class BoardController {
     @GetMapping
     @Operation(summary = "게시글 리스트", description = "게시글 리스트<br>searchType : 0 = 제목 검색<br>searchType : 1 = 내용 검색<br>searchType : 2 = 닉네임 검색")
     public List<GetSimpleBoardVo> getBoardList(GetBoardListDto dto){
+        log.info("GetBoardListDto dto : {}",dto);
         return service.getBoardList(dto);
     }
     //게시글 세부내용
@@ -96,7 +97,7 @@ public class BoardController {
     //내가 작성한 댓글 보기
     @GetMapping("my-comment")
     @Operation(summary = "내가 쓴 댓글 보기",description = "내가 쓴 댓글 보기")
-    public List<GetUserCommentListVo> myCommentList(){
+    public List<GetUserCommentListVo> myCommentList(int page){
         return service.userPostingCommentList();
     }
 }

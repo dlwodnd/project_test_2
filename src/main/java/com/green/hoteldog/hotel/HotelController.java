@@ -7,11 +7,9 @@ import com.green.hoteldog.user.models.UserHotelFavDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -64,12 +62,12 @@ public class HotelController {
         return mainPage;
     }
     //------------------------------------------호텔 상세페이지에서 날짜 선택했을때--------------------------------------------
-    @GetMapping("/b")
+    @GetMapping("/c")
     public List<HotelRoomEaByDate> whenYouChooseDates(@RequestParam int hotelPk,String startDate,String endDate){
         return service.whenYouChooseDates(hotelPk, startDate, endDate);
     }
     //--------------------------------------호텔 상세페이지에서 날짜 선택, 강아지 선택했을때-------------------------------------
-    @GetMapping("/c")
+    @GetMapping("/d")
     public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(@RequestParam int hotelPk,String startDate,String endDate,List<Integer> dogs){
         return service.whenYouChooseDatesAndDogs(hotelPk, startDate, endDate, dogs);
     }
@@ -85,15 +83,6 @@ public class HotelController {
     }
     //승준
 
-    //====================================================미구현 기능========================================================
-    @PostMapping
-    public ResVo postDogHotel(@RequestPart(required = false) List<MultipartFile> pics, @RequestBody @Valid HotelRegistrationDto dto){
-        return service.hotelRegistration(pics,dto);
-    }
-    @PostMapping("/room")
-    public ResVo postDogHotelRoom(@RequestBody @Valid HotelRoomRegistrationDto dto,@RequestPart(required = false) MultipartFile pic){
-        return service.hotelRoomRegistration(pic,dto);
-    }
 
 
 

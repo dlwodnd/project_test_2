@@ -93,6 +93,7 @@
                 AND C.nickname like '%${search}%'
             </if>
         </where>
+        LIMIT #{startIdx},#{rowCount}
     </select>
     <select id="getBoardInfo">
         SELECT A.board_pk AS boardPk

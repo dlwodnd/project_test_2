@@ -29,6 +29,7 @@ public class UserController {
     @PostMapping("/signup")
     @Operation(summary = "유저 회원가입",description = "유저 회원가입 처리")
     public ResVo userSignup(@RequestBody @Valid UserSignupDto dto){
+
         ResVo vo = new ResVo(0);
         if(dto.getEmailResponseVo().getResult() == 0){
             //예외처리
@@ -61,7 +62,7 @@ public class UserController {
         return service.getUserInfo(dto);
     }
     //유저 정보 수정
-    @PutMapping
+    @PutMapping("/info")
     @Operation(summary = "유저 정보수정")
     public ResVo updUserInfo (@RequestBody UserUpdateDto dto){
         return service.updUserInfo(dto);

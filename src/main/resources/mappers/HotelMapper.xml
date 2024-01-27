@@ -465,6 +465,18 @@
             ,business_num = #{businessNum}
             ,hotel_call = #{hotelCall}
     </insert>
+    <insert id="insHotelAddress">
+        INSERT INTO t_hotel_where
+        SET hotel_pk = #{hotelPk}
+        ,address_name = #{addressName}
+        ,region_1depth_name = #{region1DepthName}
+        ,region_2depth_name = #{region2DepthName}
+        ,region_3depth_name = #{region3DepthName}
+        ,zone_num = #{zoneNum}
+        ,x_coordinate = #{x}
+        ,y_coordinate = #{y}
+        ,detail_address = #{detailAddress}
+    </insert>
     <insert id="insHotelPics">
         INSERT INTO t_hotel_pic
         (hotel_pk , pic)

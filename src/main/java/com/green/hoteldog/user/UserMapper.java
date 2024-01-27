@@ -12,6 +12,7 @@ import java.util.List;
 public interface UserMapper {
     int userSignup(UserSignupDto dto);
     int insUserAddress(UserAddressEntity entity);
+    /*int insUserAddress(UserSignupDto dto);*/
     UserEntity userEntityByUserEmail(String userEmail);
     List<UserEntity> selUserEntity();
     List<Integer> selUserDogSize(int userPk);

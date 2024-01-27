@@ -12,16 +12,16 @@
         , user_address = #{userAddress}
     </insert>
     <insert id="insUserAddress">
-        INSERT INTO t_user_address
-        SET user_pk = #{userPK}
+        INSERT INTO t_user_where
+        SET user_pk = #{userPk}
             ,address_name = #{addressName}
-            ,region_1depth_name = #{region1depthName}
-            ,region_2depth_name = #{region2depthName}
-            ,region_3depth_name = #{region3depthName}
-            ,zone_no = #{zoneNo}
-            ,x = #{x}
-            ,y = #{y}
-            ,detail = #{detail}
+            ,region_1depth_name = #{region1DepthName}
+            ,region_2depth_name = #{region2DepthName}
+            ,region_3depth_name = #{region3DepthName}
+            ,zone_num = #{zoneNum}
+            ,x_coordinate = #{x}
+            ,y_coordinate = #{y}
+            ,detail_address = #{detailAddress}
     </insert>
     <select id="userPw">
         SELECT upw
@@ -71,19 +71,19 @@
     </select>
     <update id="updateUserInfo">
         UPDATE t_user A
-        JOIN t_user_address B
+        JOIN t_user_where B
         ON A.user_pk = B.user_pk
         SET A.nickname = #{nickname}
         ,A.phone_num = #{phoneNum}
         ,A.user_address = #{userAddress}
         ,B.address_name = #{addressName}
-        ,B.region_1depth_name = #{region1depthName}
-        ,B.region_2depth_name = #{region2depthName}
-        ,B.region_3depth_name = #{region3depthName}
-        ,B.zone_no = #{zoneNo}
-        ,B.x = #{x}
-        ,B.y = #{y}
-        ,B.detail = #{detail}
+        ,B.region_1depth_name = #{region1DepthName}
+        ,B.region_2depth_name = #{region2DepthName}
+        ,B.region_3depth_name = #{region3DepthName}
+        ,B.zone_num = #{zoneNum}
+        ,B.x_coordinate = #{x}
+        ,B.y_coordinate = #{y}
+        ,B.detail_address = #{detailAddress}
         WHERE A.user_pk = #{userPk}
     </update>
 </mapper>

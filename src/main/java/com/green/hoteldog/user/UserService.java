@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,18 +30,21 @@ public class UserService {
     private final CookieUtils cookie;
     private final AuthenticationFacade facade;
     //유저 회원가입
+    @Transactional(rollbackFor = {Exception.class})
     public ResVo userSignup (UserSignupDto dto){
         String pw = passwordEncoder.encode(dto.getUpw());
         dto.setUpw(pw);
         dto.setUserEmail(dto.getEmailResponseVo().getEmail());
         dto.setUserTypePk(1);
-        try{
-            mapper.userSignup(dto);
-            mapper.insUserAddress(dto.getAddressEntity());
-            return new ResVo(1);
-        }catch (Exception e){
-            return new ResVo(0);
-        }
+        String userAddress = dto.getAddressEntity().getAddressName() + " " + dto.getAddressEntity().getDetailAddress();
+        dto.setUserAddress(userAddress);
+        mapper.userSignup(dto);
+        log.info("userPk : {}",dto.getUserPk());
+        dto.getAddressEntity().setUserPk(dto.getUserPk());
+        log.info("userAddressUserPk : {}",dto.getAddressEntity().getUserPk());
+        mapper.insUserAddress(dto.getAddressEntity());
+        return new ResVo(1);
+
     }
     //유저 로그인
     public UserSigninVo userSignin(HttpServletResponse response, HttpServletRequest request, UserSigninDto dto){
@@ -54,15 +58,17 @@ public class UserService {
         }
         Myprincipal myprincipal = new Myprincipal(userEntity.getUserPk());
         String at = tokenProvider.generateAccessToken(myprincipal);
+        //엑서스 토큰 값 받아오기
         String rt = tokenProvider.generateRefreshToken(myprincipal);
-        List<Integer> dogSizeList = mapper.selUserDogSize(userEntity.getUserPk());
+        //리프레쉬 토큰 값 받아오기
+        /*List<Integer> dogSizeList = mapper.selUserDogSize(userEntity.getUserPk());*/
 
         int rtCookieMaxAge = (int)appProperties.getJwt().getRefreshTokenExpiry() / 1000;
         cookie.deleteCookie(response,"rt");
         cookie.setCookie(response,"rt",rt,rtCookieMaxAge);
 
-        vo.setDepthName(mapper.selUserDepthName(userEntity.getUserPk()));
-        vo.setSizePkList(dogSizeList);
+        /*vo.setDepthName(mapper.selUserDepthName(userEntity.getUserPk()));
+        vo.setSizePkList(dogSizeList);*/
         vo.setUserPk(userEntity.getUserPk());
         vo.setUserTypePk(userEntity.getUserTypePk());
         vo.setAccessToken(at);

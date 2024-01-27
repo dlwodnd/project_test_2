@@ -14,8 +14,6 @@ public class AuthenticationFacade {
         }catch (Exception e){
             return null;
         }
-
-
     }
     public int getLoginUserPk(){
         MyUserDtails myUserDtails = getLoginUser();

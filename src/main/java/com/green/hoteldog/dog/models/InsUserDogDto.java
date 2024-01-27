@@ -13,7 +13,6 @@ public class InsUserDogDto {
     private int sizePk;
     private String dogNm;
     private int dogAge;
-    @JsonIgnore
     private MultipartFile dogPic;
     private String dogEtc;
 }

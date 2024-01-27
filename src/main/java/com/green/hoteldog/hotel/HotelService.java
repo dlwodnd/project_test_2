@@ -1,9 +1,7 @@
 package com.green.hoteldog.hotel;
 
 
-import com.green.hoteldog.board.models.PostBoardPicDto;
 import com.green.hoteldog.common.AppProperties;
-import com.green.hoteldog.common.MyFileUtils;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.hotel.model.*;
 import com.green.hoteldog.security.AuthenticationFacade;
@@ -12,13 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openkoreantext.processor.OpenKoreanTextProcessorJava;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import scala.collection.Seq;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +26,6 @@ public class HotelService {
     private final HotelMapper mapper;
     private final AppProperties appProperties;
     private final AuthenticationFacade authenticationFacade;
-    private final MyFileUtils fileUtils;
 
     //-----------------------------------------------호텔 광고 리스트 셀렉트------------------------------------------------
     public List<HotelListSelVo> getHotelAdvertiseList(HotelListSelDto dto){
@@ -138,17 +132,6 @@ public class HotelService {
                 || dto.getDogInfo().size() > 0) && dto.getSearch() == null || dto.getHotelOptionPk().size() > 0){
             //  LocalDate, Calendar 방법 두 가지
 
-            /*
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-DD"); //년월일 표시
-            Calendar cal = Calendar.getInstance();
-            cal.get(Calendar.YEAR);
-            cal.set ( 2019, 1-1, 1 ); //종료 날짜 셋팅
-            String endDate = dateFormat.format(cal.getTime());
-
-            cal.set ( 2018, 1-1, 1 ); //시작 날짜 셋팅
-            String startDate = dateFormat.format(cal.getTime());
-            */
-
             // "yyyy-MM-dd" 포맷을 사용하여 문자열을 LocalDate로 파싱
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate fromDate = LocalDate.parse(dto.getFromDate(), formatter);
@@ -173,18 +156,55 @@ public class HotelService {
                 dateRange.add(fromDateUnit);
                 fromDateUnit = fromDateUnit.plusDays(1);
             }
-            // 최종 출력
+            // 날짜 출력
             for ( LocalDate dateList : dateRange ) {
                 log.info("date : {}", dateList);
             }
             dto.setDate(dateRange);
 
+            // 개별 방에 관한 호텔 pk 셀렉
+            List<Integer> list = new ArrayList<>();
+            DogSizeInfoIn dogSizeInfo = new DogSizeInfoIn();
+            dogSizeInfo.setDate(dateRange);
+            for ( DogSizeEa ea : dto.getDogInfo() ) {
+                dogSizeInfo.setDogSize(ea.getDogSize());
+                dogSizeInfo.setDogCount(ea.getDogCount());
+                List<Integer> hotelPk1 = mapper.selHotelPkToIndividualDogInfo(dogSizeInfo);
+                list.addAll(hotelPk1);
+            }
+            // 단체 방에 관한 호텔 pk 셀렉
+            DogSizeInfoGr dogSizeinfoGr = new DogSizeInfoGr();
+            dogSizeinfoGr.setDate(dateRange);
+            List<Integer> dogSize = new ArrayList<>();
+            int allCount = 0;
+            for ( DogSizeEa ea : dto.getDogInfo() ) {
+                allCount =+ ea.getDogCount();
+                dogSize.add(ea.getDogSize());
+            }
+            dogSizeinfoGr.setAllDogCount(allCount);
+            Integer maxValue = dogSize.stream()
+                    .mapToInt(x -> x)
+                    .max()
+                    .orElse(0); // 예외 시
+            log.info("maxValue : {}", maxValue);
+            dogSizeinfoGr.setBiggestDogSize(maxValue);
+            List<Integer> hotelPk2 = mapper.selHotelPkToGroupDogInfo(dogSizeinfoGr);
+            list.addAll(hotelPk2);
+            // 단체 방 + 개별 방 종합 호텔 pk 셀렉 구현
+
+
+            // 중복 제거
+            List<Integer> filteredPk = list.stream().distinct().collect(Collectors.toList());
+            log.info("filteredPk : {}", filteredPk);
+            dto.setFilteredPk(filteredPk);
             allVo.setHotelList(mapper.selHotelListToFilter(dto));
+
             log.info("allVo : {}", allVo);
             return allVo;
         }
         return null;
     }
+    // 영웅
 
 
 
@@ -428,74 +448,5 @@ public class HotelService {
         }
         return monthDateList;
     }
-    //현재 월 기준으로 12개월 날짜 정보
-    public List<LocalDate> getTwelveMonth(int year,int month){
-        List<LocalDate> monthDateList=new ArrayList<>();
-        LocalDate today=LocalDate.of(year,month,1);
-        Period period= Period.between(today,today.plusMonths(12));
-        for (int i = 1; i < period.getDays() ; i++) {
-            LocalDate localDate=LocalDate.now().plusDays(i- today.getDayOfMonth());
-            monthDateList.add(localDate);
-        }
-        return monthDateList;
-    }
-
-    public List<LocalDate> getTwelveMonth(){
-        List<LocalDate> monthDateList=new ArrayList<>();
-        LocalDate now = LocalDate.now();
-        LocalDate today=LocalDate.of(now.getYear(),now.getMonth(),1);
-        Period period= Period.between(today,today.plusMonths(12));
-        for (int i = 1; i < period.getDays() ; i++) {
-            LocalDate localDate=LocalDate.now().plusDays(i- today.getDayOfMonth());
-            monthDateList.add(localDate);
-        }
-        return monthDateList;
-    }
     //승준
-
-    //====================================================미구현 기능========================================================
-    public ResVo hotelRegistration(List<MultipartFile> multiPics,HotelRegistrationDto dto){
-        dto.setUserPk(authenticationFacade.getLoginUserPk());
-        mapper.hotelRegistration(dto);
-        if(multiPics != null){
-            List<String> pics = new ArrayList<>();
-            String target = "/hotel/"+dto.getHotelPk();
-            for(MultipartFile file : multiPics){
-                String saveFileNm = fileUtils.transferTo(file,target);
-                pics.add(saveFileNm);
-            }
-            dto.setPics(pics);
-            mapper.insHotelPics(dto);
-        }
-
-
-        try {
-            mapper.insHotelOptions(dto);
-            return new ResVo(1);
-        }catch (Exception e){
-            return new ResVo(0);
-        }
-    }
-    public ResVo hotelRoomRegistration(MultipartFile pic,HotelRoomRegistrationDto dto){
-        try {
-            String target = "/hotel/" + dto.getHotelPk() + "/" + dto.getHotelRoomNm();
-            String saveFileNm = fileUtils.transferTo(pic,target);
-            dto.setRoomPic(saveFileNm);
-            mapper.insHotelRoomInfo(dto);
-            HotelRoomInfoDateDto dateDto = new HotelRoomInfoDateDto();
-            List<LocalDate> twelvemonthDate =  getTwelveMonth();
-            List<String> twelvemonth= twelvemonthDate
-                    .stream()
-                    .map(localDate -> localDate.toString())
-                    .collect(Collectors.toList());
-            dateDto.setHotelRoomPk(dto.getHotelRoomPk());
-            dateDto.setRoomDate(twelvemonth);
-            dateDto.setRoomLeftEa(dto.getHotelRoomEa());
-            mapper.insHotelRoomInfoDate(dateDto);
-            return new ResVo(1);
-        }catch (Exception e){
-            return new ResVo(0);
-        }
-
-    }
 }

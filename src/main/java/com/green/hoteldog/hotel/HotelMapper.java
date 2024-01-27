@@ -16,6 +16,8 @@ public interface HotelMapper {
     List<HotelListSelVo> selHotelListToSearch(HotelListSelDto Dto);
     List<HotelListSelVo> selHotelListToAccurateSearch(HotelListSelDto Dto);
     List<HotelListSelVo> selHotelListToFilter(HotelListSelDto Dto);
+    List<Integer> selHotelPkToIndividualDogInfo(DogSizeInfoIn i);
+    List<Integer> selHotelPkToGroupDogInfo(DogSizeInfoGr i);
     //영웅
 
     List<HotelReviewVo> getHotelReviewThree(int hotelPk);
@@ -29,12 +31,4 @@ public interface HotelMapper {
     List<HotelRoomResInfoByMonth> getHotelRoomResInfo(int hotelPk, String startDate, String endDate);
     List<HotelRoomResInfoByMonth> getHotelFilterRoomResInfo(int hotelPk,String startDate, String endDate,int howMany,int large );
     //승준
-
-
-    //====================================================미구현 기능========================================================
-    int hotelRegistration (HotelRegistrationDto dto);
-    int insHotelPics(HotelRegistrationDto dto);
-    int insHotelOptions(HotelRegistrationDto dto);
-    int insHotelRoomInfo(HotelRoomRegistrationDto dto);
-    int insHotelRoomInfoDate(HotelRoomInfoDateDto dateDto);
 }

@@ -41,7 +41,6 @@ public class DogService {
         int result = mapper.updUserDog(dto);
         return new ResVo(result);
     }
-    //유저 강아지 사진 수정
     public ResVo updUserDogPic(MultipartFile pic,int userDogPk){
         String target = "/user/"+facade.getLoginUserPk()+"/"+userDogPk;
         fileUtils.delFolderTrigger(target);
