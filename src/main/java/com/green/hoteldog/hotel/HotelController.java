@@ -1,15 +1,18 @@
 package com.green.hoteldog.hotel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.hotel.model.*;
 import com.green.hoteldog.user.models.UserHotelFavDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -83,7 +86,14 @@ public class HotelController {
     }
     //승준
 
-
-
-
+    //호텔 더미데이터 작성
+    @PostMapping
+    public ResVo hotelRegistration(@RequestPart(required = false) @Schema(hidden = true) List<MultipartFile> pics, @RequestBody HotelInsDto dto){
+        log.info("hotelDto : {}",dto);
+        return service.hotelRegistration(pics, dto);
+    }
+    @PostMapping("/room")
+    public ResVo hotelRoomRegistration (@RequestPart(required = false) @Schema(hidden = true) MultipartFile roomPic, @RequestBody InsHotelRoomDto dto){
+        return service.insHotelRoom(roomPic, dto);
+    }
 }

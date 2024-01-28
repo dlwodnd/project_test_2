@@ -53,11 +53,14 @@ public class BoardController {
         dto.setPisc(pics);
         return service.putBoard(dto);
     }
-    /*//게시글 좋아요 임시 중단
+    /*
+    //게시글 좋아요 임시 중단
     @GetMapping("/fav")
     public ResVo patchBoard(@Valid BoardFavDto dto){
         return service.putBoardFav(dto);
-    }*/
+    }
+    */
+
     //게시글 삭제
     @DeleteMapping
     @Operation(summary = "게시글 삭제",description = "게시글 삭제")
