@@ -2,14 +2,19 @@ package com.green.hoteldog.hotel;
 
 import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.ResVo;
+import com.green.hoteldog.exceptions.CommonErrorCode;
+import com.green.hoteldog.exceptions.CustomException;
 import com.green.hoteldog.hotel.model.*;
+import com.green.hoteldog.security.AuthenticationFacade;
 import com.green.hoteldog.user.models.UserHotelFavDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,6 +24,12 @@ import java.util.List;
 @RequestMapping("/api/hotel")
 public class HotelController {
     private final HotelService service;
+    private final AuthenticationFacade authenticationFacade;
+    public void checkUser(){
+        if(authenticationFacade.getLoginUserPk()==0){
+            throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
+        }
+    }
     // 0-1 광고+호텔 리스트 api/hotel/{page}
     // 0-2 광고 리스트 api/hotel/ad
 
@@ -53,22 +64,28 @@ public class HotelController {
     //영웅
 
     //-------------------------------------------------호텔 상세페이지 출력-------------------------------------------------
-    @GetMapping("/a")
-    public HotelInfoEntity getHotelDetail(@RequestBody HotelMainPageDto dto){
-        if(dto.getHotelPk()==0){
-            //예외
-        }
+    @GetMapping("/{hotel_pk}")
+    public HotelInfoEntity getHotelDetail(@RequestParam("hotel_pk") int hotelPk){
+        HotelMainPageDto dto=new HotelMainPageDto();
+        dto.setHotelPk(hotelPk);
+
         HotelInfoEntity mainPage=service.getHotelDetail(dto);
         return mainPage;
     }
     //------------------------------------------호텔 상세페이지에서 날짜 선택했을때--------------------------------------------
-    @GetMapping("/c")
-    public List<HotelRoomEaByDate> whenYouChooseDates(@RequestParam int hotelPk,String startDate,String endDate){
+    @GetMapping("/{hotel_pk}/{start_date}/{end_date}")
+    public List<HotelRoomEaByDate> whenYouChooseDates(@RequestParam("hotel_pk") int hotelPk,
+                                                      @RequestParam("start_date") String startDate,
+                                                      @RequestParam("end_date") String endDate){
+
         return service.whenYouChooseDates(hotelPk, startDate, endDate);
     }
     //--------------------------------------호텔 상세페이지에서 날짜 선택, 강아지 선택했을때-------------------------------------
-    @GetMapping("/d")
-    public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(@RequestParam int hotelPk,String startDate,String endDate,List<Integer> dogs){
+    @GetMapping("/{hotel_pk}/{start_date}/{end_date}/with_dogs")
+    public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(@RequestParam("hotel_pk") int hotelPk,
+                                                             @RequestParam("start_date") String startDate,
+                                                             @RequestParam("end_date") String endDate,
+                                                             List<Integer> dogs){
         return service.whenYouChooseDatesAndDogs(hotelPk, startDate, endDate, dogs);
     }
 
@@ -78,12 +95,21 @@ public class HotelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "좋아요 처리: result(1), 좋아요 취소: result(2)")
     })
-    public ResVo toggleHotelBookMark(@RequestBody UserHotelFavDto dto){
+    public ResVo toggleHotelBookMark(UserHotelFavDto dto){
+        checkUser();
         return service.toggleHotelBookMark(dto);
     }
     //승준
 
-
-
+    //호텔 더미데이터 작성
+    @PostMapping
+    public ResVo hotelRegistration(@RequestPart(required = false) @Schema(hidden = true) List<MultipartFile> pics, @RequestBody HotelInsDto dto){
+        log.info("hotelDto : {}",dto);
+        return service.hotelRegistration(pics, dto);
+    }
+    @PostMapping("/room")
+    public ResVo hotelRoomRegistration (@RequestPart(required = false) @Schema(hidden = true) MultipartFile roomPic, @RequestBody InsHotelRoomDto dto){
+        return service.insHotelRoom(roomPic, dto);
+    }
 
 }

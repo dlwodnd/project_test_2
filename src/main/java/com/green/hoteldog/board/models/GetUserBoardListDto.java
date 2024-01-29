@@ -5,16 +5,14 @@ import com.green.hoteldog.common.Const;
 import lombok.Data;
 
 @Data
-public class GetMyCommentListDto {
+public class GetUserBoardListDto {
     @JsonIgnore
     private int userPk;
-    @JsonIgnore
-    private int rowCount = Const.COMMENT_COUNT_PER_PAGE;
     private int page;
-    @JsonIgnore
+    private int rowCount = Const.BOARD_COUNT_PER_PAGE;
     private int startIdx;
 
-    public void setPage(int page){
-        this.startIdx = (page - 1) * this.rowCount;
+    public void setStartIdx(int startIdx){
+        this.startIdx = (this.page - 1) * this.rowCount;
     }
 }

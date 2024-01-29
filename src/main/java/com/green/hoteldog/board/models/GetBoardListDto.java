@@ -8,9 +8,8 @@ import lombok.Data;
 
 @Data
 public class GetBoardListDto {
-    @Min(value = 0,message = "boardCategoryPk 값은 1 이상이어야 합니다.")
+    @Min(value = 1,message = "boardCategoryPk 값은 1 이상이어야 합니다.")
     private int boardCategoryPk;
-    @Min(value = 0,message = "page 값은 1 이상이어야 합니다.")
     private int page;
     @JsonIgnore
     private int rowCount = Const.BOARD_COUNT_PER_PAGE;
@@ -18,15 +17,10 @@ public class GetBoardListDto {
     private String search;
     @Min(value = 0,message = "searchType 값은 0 이상이어야 합니다.")
     private int searchType;
-
     @JsonIgnore
     private int startIdx;
 
-    public void setStartIdx(int startIdx) {
-        this.startIdx = (page - 1) * this.rowCount;
+    public void setStartIdx(int startIdx){
+        this.startIdx = (this.page - 1) * this.rowCount;
     }
-
-    /*public void setPage(int page){
-        this.startIdx = (page - 1) * this.rowCount;
-    }*/
 }

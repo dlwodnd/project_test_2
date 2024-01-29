@@ -10,12 +10,11 @@ public class GetBoardInfoDto {
     @Min(value = 1,message = "boardPk 값은 1 이상이어야 합니다.")
     private int boardPk;
     private int page;
-    @JsonIgnore
     private int rowCount = Const.COMMENT_COUNT_PER_PAGE;
     @JsonIgnore
     private int startIdx;
 
-    public void setPage(int page){
-        this.startIdx = (page - 1) * this.rowCount;
+    public void setStartIdx(int startIdx){
+        this.startIdx = (this.page - 1) * this.rowCount;
     }
 }
