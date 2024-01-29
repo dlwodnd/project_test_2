@@ -19,6 +19,7 @@ logs
 *.iws
 *.iml
 *.ipr
+*.yaml
 
 ### NetBeans ###
 /nbproject/private/
@@ -32,3 +33,4 @@ build/
 
 ### VS Code ###
 .vscode/
+
