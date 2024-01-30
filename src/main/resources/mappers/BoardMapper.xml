@@ -11,7 +11,7 @@
     </insert>
     <insert id="postBoardPics">
         INSERT INTO t_board_pics
-        (board_pk,pic)
+        (board_pk,board_pic)
         VALUES
         <foreach collection="pics" item="pic" separator=",">
             (#{boardPk},#{pic})
@@ -79,11 +79,7 @@
         ON A.user_pk = C.user_pk
         JOIN t_board_category F
         ON A.board_category_pk = F.board_category_pk
-
         <where>
-            <if test="boardCategoryPk != null and boardCategoryPk != 0">
-                A.board_category_pk = #{boardCategoryPk}
-            </if>
             <if test="search != null and searchType == 0">
                 AND A.title like '%${search}%'
             </if>
@@ -92,6 +88,9 @@
             </if>
             <if test="search != null and searchType == 2">
                 AND C.nickname like '%${search}%'
+            </if>
+            <if test="boardCategoryPk != null and boardCategoryPk != 0">
+                AND A.board_category_pk = #{boardCategoryPk}
             </if>
         </where>
         LIMIT #{startIdx} , #{rowCount}
@@ -183,17 +182,17 @@
         SELECT COUNT(*)
         FROM t_board
         <where>
-            <if test="boardCategoryPk != null and boardCategoryPk != 0">
-                A.board_category_pk = #{boardCategoryPk}
-            </if>
             <if test="search != null and searchType == 0">
-                AND A.title like '%${search}%'
+                AND title like '%${search}%'
             </if>
             <if test="search != null and searchType == 1">
-                AND A.contents like '%${search}%'
+                AND contents like '%${search}%'
             </if>
             <if test="search != null and searchType == 2">
-                AND C.nickname like '%${search}%'
+                AND nickname like '%${search}%'
+            </if>
+            <if test="boardCategoryPk != null and boardCategoryPk != 0">
+                AND board_category_pk = #{boardCategoryPk}
             </if>
         </where>
     </select>

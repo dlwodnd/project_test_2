@@ -5,7 +5,6 @@ import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.exceptions.BoardErrorCode;
 import com.green.hoteldog.exceptions.CustomException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,16 +34,17 @@ public class BoardController {
         return service.getBoardInfo(dto);
     }
     //게시글 등록
-    @PostMapping
+    @PostMapping()
     @Operation(summary = "게시글 등록",description = "게시글 등록<br>이미지 등록은 postman 을 통해서 가능")
-    public ResVo insBoard(@RequestPart(required = false) @Schema(hidden = true) List<MultipartFile> pics
-            ,@RequestBody @Valid PostBoardDto dto){
-        if (pics.size() > 3){
-            throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
-        }
+    public ResVo insBoard(@RequestPart(required = false) List<MultipartFile> pics
+            ,@RequestPart @Valid PostBoardDto dto){
+
         log.info("controller insDto : {}",dto);
         if(pics != null){
             dto.setPics(pics);
+            if (dto.getPics().size() > 3){
+                throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
+            }
         }
         return service.postBoard(dto);
     }
@@ -53,12 +53,14 @@ public class BoardController {
     //게시글 수정
     @PutMapping
     @Operation(summary = "게시글 수정",description = "게시글 수정<br>이미지 등록은 postman 을 통해서 가능")
-    public ResVo putBoard(@RequestPart(required = false) @Schema(hidden = true) List<MultipartFile> pics
-            , @RequestBody @Valid PutBoardDto dto){
-        if (pics.size() > 3){
-            throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
+    public ResVo putBoard(@RequestPart(required = false) List<MultipartFile> pics
+            , @RequestPart @Valid PutBoardDto dto){
+        if(pics != null){
+            dto.setPics(pics);
+            if (dto.getPics().size() > 3){
+                throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
+            }
         }
-        dto.setPics(pics);
         return service.putBoard(dto);
     }
     /*

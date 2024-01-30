@@ -25,7 +25,7 @@ public class ReviewController {
     @PostMapping
     @Operation(summary = "리뷰 등록", description = "리뷰 등록<br>사진 등록은 postman으로 테스트")
     public ResVo postReview(@RequestPart(required = false) List<MultipartFile> pics,
-                            @RequestBody @Valid ReviewInsDto dto) {
+                            @RequestPart @Valid ReviewInsDto dto) {
         if (pics.size() > 3){
             throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
         }
@@ -37,7 +37,7 @@ public class ReviewController {
     @PutMapping
     @Operation(summary = "리뷰 수정", description = "리뷰 수정<br>사진 등록은 postman으로 테스트")
     public ResVo putReview(@RequestPart(required = false) List<MultipartFile> pics,
-                           @RequestBody @Valid ReviewUpdDto dto) {
+                           @RequestPart @Valid ReviewUpdDto dto) {
         if (pics.size() > 3){
             throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
         }
@@ -60,16 +60,15 @@ public class ReviewController {
     }
     //--------------------------------------------------리뷰 삭제--------------------------------------------------------
     @DeleteMapping
-    @Operation(summary = "리뷰 좋아요",description = "리뷰 삭제처리")
+    @Operation(summary = "리뷰 삭제",description = "리뷰 삭제처리")
     public ResVo delReview(DelReviewDto dto){
         return service.delReview(dto);
     }
     //-------------------------------------------상세페이지 리뷰 페이지네이션-------------------------------------------------
-    @GetMapping("/{hotel_pk}/review/{page}/{row_count}")
-    public List<HotelReviewSelVo> getHotelReview(@RequestParam ("hotel_pk") int hotelPk, @RequestParam int page
-            , @RequestParam ("row_count") int rowCount){
+    @GetMapping("/{hotel_pk}/review/{page}")
+    public List<HotelReviewSelVo> getHotelReview(@RequestParam("hotel_pk") int hotelPk, @RequestParam int page) {
         HotelReviewSelDto dto = new HotelReviewSelDto();
-        dto.setRowCount(rowCount);
+        dto.setRowCount(3);
         dto.setHotelPk(hotelPk);
         dto.setPage(page);
         return service.getHotelReview(dto);
