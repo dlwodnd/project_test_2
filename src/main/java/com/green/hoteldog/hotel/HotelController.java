@@ -1,11 +1,12 @@
 package com.green.hoteldog.hotel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.exceptions.CommonErrorCode;
 import com.green.hoteldog.exceptions.CustomException;
 import com.green.hoteldog.hotel.model.*;
 import com.green.hoteldog.security.AuthenticationFacade;
-import com.green.hoteldog.user.models.UserHotelFavDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +29,7 @@ public class HotelController {
     private final AuthenticationFacade authenticationFacade;
     public void checkUser(){
         if(authenticationFacade.getLoginUserPk()==0){
-            throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
+            throw new CustomException(CommonErrorCode.UNAUTHORIZED);
         }
     }
     // 0-1 광고+호텔 리스트 api/hotel/{page}
@@ -57,16 +58,15 @@ public class HotelController {
     // 상세 정렬방식 - 리뷰 많은 순, 별점 높은 순 : XML에서 정의
     //--------------------------------------------------호텔 리스트-------------------------------------------------------
     // 0128 get방식 RequestParam으로 HotelListSelDto객체 받을 때 DogSizeEa를 String에서 int로 컨버트하여 mapping하려 했지만 실패
-    @PostMapping("/{page}")
+    @PostMapping
     public HotelListSelAllVo getHotelList(@RequestParam int page, @RequestBody @Valid HotelListSelDto dto) {
         log.info("HotelListSelDto dto : {}",dto);
+        dto.setRowCount(Const.HOTEL_LIST_COUNT_PER_PAGE);
         dto.setPage(page);
         return service.getHotelList(dto);
     }
-    //영웅
-
     //-------------------------------------------------호텔 상세페이지 출력-------------------------------------------------
-    @GetMapping()
+    @GetMapping
     public HotelInfoEntity getHotelDetail(@RequestParam("hotel_pk") int hotelPk){
         HotelMainPageDto dto=new HotelMainPageDto();
         dto.setHotelPk(hotelPk);
@@ -76,40 +76,42 @@ public class HotelController {
     }
     //------------------------------------------호텔 상세페이지에서 날짜 선택했을때--------------------------------------------
     @GetMapping("/info")
-    public List<HotelRoomEaByDate> whenYouChooseDates(@RequestParam("hotel_pk") int hotelPk,
-                                                      @RequestParam("start_date") LocalDate startDate,
-                                                      @RequestParam("end_date") LocalDate endDate){
+    public List<HotelRoomEaByDate> whenYouChooseDates(@JsonProperty int hotelPk,
+                                                      @JsonProperty LocalDate startDate,
+                                                      @JsonProperty LocalDate endDate){
 
         return service.whenYouChooseDates(hotelPk, startDate, endDate);
     }
     //--------------------------------------호텔 상세페이지에서 날짜 선택, 강아지 선택했을때-------------------------------------
     @GetMapping("/info/dogs")
-    public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(@RequestParam("hotel_pk") int hotelPk,
-                                                             @RequestParam("start_date") LocalDate startDate,
-                                                             @RequestParam("end_date") LocalDate endDate,
+    public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(@JsonProperty int hotelPk,
+                                                             @JsonProperty LocalDate startDate,
+                                                             @JsonProperty LocalDate endDate,
                                                              @RequestParam List<Integer> dogs){
         return service.whenYouChooseDatesAndDogs(hotelPk, startDate, endDate, dogs);
     }
 
     //-----------------------------------------------------호텔 북마크----------------------------------------------------
-    @GetMapping("/mark/{page}")
+    @GetMapping("/mark")
     @Operation(summary = "좋아요 toggle", description = "toggle로 처리함<br>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "좋아요 처리: result(1), 좋아요 취소: result(2)")
     })
-    public ResVo toggleHotelBookMark(UserHotelFavDto dto){
+    public ResVo toggleHotelBookMark(int hotelPk){
         checkUser();
-        return service.toggleHotelBookMark(dto);
-    }
-    //승준
-    @GetMapping("/like")
-    public List<HotelBookMarkListVo> getHotelBookmarkList(){
         int userPk=authenticationFacade.getLoginUserPk();
-        return service.getHotelBookmarkList(userPk);
+        return service.toggleHotelBookMark(hotelPk,userPk);
+    }
+    //-----------------------------------------------------호텔 북마크 리스트----------------------------------------------
+    @GetMapping("/like")
+    public List<HotelBookMarkListVo> getHotelBookmarkList(@RequestParam int page){
+        checkUser();
+        int userPk=authenticationFacade.getLoginUserPk();
+        return service.getHotelBookmarkList(userPk,page);
     }
 
     //호텔 더미데이터 작성
-    @PostMapping
+    @PostMapping("/registration")
     public ResVo hotelRegistration(@RequestPart(required = false) @Schema(hidden = true) List<MultipartFile> pics, @RequestBody HotelInsDto dto){
         log.info("hotelDto : {}",dto);
         return service.hotelRegistration(pics, dto);

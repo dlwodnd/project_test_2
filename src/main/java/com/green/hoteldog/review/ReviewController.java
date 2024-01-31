@@ -1,5 +1,6 @@
 package com.green.hoteldog.review;
 
+import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.exceptions.BoardErrorCode;
 import com.green.hoteldog.exceptions.CustomException;
@@ -20,7 +21,6 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService service;
 
-
     //----------------------------------------------------리뷰등록--------------------------------------------------------
     @PostMapping
     @Operation(summary = "리뷰 등록", description = "리뷰 등록<br>사진 등록은 postman으로 테스트")
@@ -32,7 +32,6 @@ public class ReviewController {
         dto.setPics(pics);
         return service.insReview(dto);
     }
-
     //-------------------------------------------------리뷰 전체 수정------------------------------------------------------
     @PutMapping
     @Operation(summary = "리뷰 수정", description = "리뷰 수정<br>사진 등록은 postman으로 테스트")
@@ -65,14 +64,13 @@ public class ReviewController {
         return service.delReview(dto);
     }
     //-------------------------------------------상세페이지 리뷰 페이지네이션-------------------------------------------------
-    @GetMapping("/{hotel_pk}/review/{page}")
-    public List<HotelReviewSelVo> getHotelReview(@RequestParam("hotel_pk") int hotelPk, @RequestParam int page) {
+    @GetMapping("/review/{hotel_pk}")
+    public List<HotelReviewSelVo> getHotelReview(@PathVariable ("hotel_pk") int hotelPk, @RequestParam int page){
         HotelReviewSelDto dto = new HotelReviewSelDto();
-        dto.setRowCount(3);
+        dto.setRowCount(Const.REVIEW_COUNT_PER_PAGE);
         dto.setHotelPk(hotelPk);
         dto.setPage(page);
         return service.getHotelReview(dto);
     }
-    //영웅
 
 }

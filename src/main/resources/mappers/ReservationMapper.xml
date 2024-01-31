@@ -103,16 +103,14 @@
     <update id="updRemainedHotelRoom2">
         <foreach collection="hotelRoomPk" item="item">
             UPDATE t_hotel_room_info_date
-            SET room_left_ea = room_left_ea + 1
+            SET room_left_ea = room_left_ea - 1
             WHERE
             <foreach collection="date" item="item2" open="(" close=")" separator="OR">
                 (room_date = #{item2} AND hotel_room_pk = #{item})
             </foreach>
         </foreach>
     </update>
-
-    <!--영웅-->
-
+    <!--예약강아지 리스트-->
     <select id="getDogInfoReservation">
         SELECT A.res_pk AS resPk, B.dog_nm AS dogNm
         FROM t_res_comprehensive_info A
@@ -123,6 +121,7 @@
             #{resPk}
         </foreach>
     </select>
+    <!--예약 리스트-->
     <select id="getUserReservation">
         SELECT D.hotel_nm AS hotelNm,D.hotel_call AS hotelCall
         ,   C.hotel_room_nm AS hotelRoomNm ,A.from_date AS fromDate
@@ -135,7 +134,6 @@
         JOIN t_hotel D
         ON A.hotel_pk=D.hotel_pk
         WHERE A.user_pk=#{userPk} AND A.res_status=1
+        LIMIT #{fromPage} , #{toPage}
     </select>
-    <!--승준-->
-
 </mapper>

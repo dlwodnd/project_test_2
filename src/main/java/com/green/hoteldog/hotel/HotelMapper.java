@@ -1,7 +1,6 @@
 package com.green.hoteldog.hotel;
 
 import com.green.hoteldog.hotel.model.*;
-import com.green.hoteldog.user.models.UserHotelFavDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -10,9 +9,9 @@ import java.util.List;
 public interface HotelMapper {
     List<HotelListSelVo> selHotelAdvertiseList(HotelListSelDto dto);
     List<HotelListSelVo> selHotelListToNonMember(HotelListSelDto dto);
-    HotelListSelProcDto selUserInfoToUserPk(HotelListSelDto dto);
-    List<HotelListSelVo> selHotelListAsUserAddress(HotelListSelProcDto pDto);
-    List<HotelListSelVo> selHotelListAsUserAddressAndDogInformation(HotelListSelProcDto pDto);
+    List<HotelListSelProcDto> selUserInfoToUserPk(HotelListSelDto dto);
+    List<HotelListSelVo> selHotelListAsUserAddress(HotelListSelDto pDto);
+    List<HotelListSelVo> selHotelListAsUserAddressAndDogInformation(HotelListSelDto pDto);
     List<HotelListSelVo> selHotelListToSearch(HotelListSelDto Dto);
     List<HotelListSelVo> selHotelListToAccurateSearch(HotelListSelDto Dto);
     List<HotelListSelVo> selHotelListToFilter(HotelListSelDto Dto);
@@ -26,9 +25,9 @@ public interface HotelMapper {
     List<String> hotelOptionInfo(int hotelPk);
     List<MyDog> getMyDogs(int userPk);
     List<HotelRoomInfoVo> getHotelRoomInfo(int hotelPk);
-    int delHotelBookMark(UserHotelFavDto dto);
-    int insHotelBookMark(UserHotelFavDto dto);
-    List<HotelBookMarkListVo> getHotelBookMark(int userPk);
+    int delHotelBookMark(int userPk,int hotelPk);
+    int insHotelBookMark(int userPk,int hotelPk);
+    List<HotelBookMarkListVo> getHotelBookMark(int userPk,int fromPage,int toPage);
     Integer isMoreHotelReview(int hotelPk);
     List<HotelRoomResInfoByMonth> getHotelRoomResInfo(int hotelPk, String startDate, String endDate);
     List<HotelRoomResInfoByMonth> getHotelFilterRoomResInfo(int hotelPk,String startDate, String endDate,int howMany,int large );

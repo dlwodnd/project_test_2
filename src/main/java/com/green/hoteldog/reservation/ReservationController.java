@@ -5,7 +5,6 @@ import com.green.hoteldog.exceptions.CommonErrorCode;
 import com.green.hoteldog.exceptions.CustomException;
 import com.green.hoteldog.reservation.model.HotelReservationDelDto;
 import com.green.hoteldog.reservation.model.HotelReservationInsDto;
-import com.green.hoteldog.reservation.model.ResInfoDto;
 import com.green.hoteldog.reservation.model.ResInfoVo;
 import com.green.hoteldog.security.AuthenticationFacade;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/reservation")
 public class ReservationController {
     private final ReservationService service;
     private final AuthenticationFacade authenticationFacade;
@@ -26,27 +25,22 @@ public class ReservationController {
             throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
         }
     }
-
-    //영웅
     //---------------------------------------------------호텔 예약--------------------------------------------------------
-    @PostMapping("/hotel/res")
+    @PostMapping
     public ResVo postHotelReservation(@RequestBody List<HotelReservationInsDto> dto){
         return service.postHotelReservation(dto);
     }
     //---------------------------------------------------예약 취소--------------------------------------------------------
-    @DeleteMapping("/hotel/res")
+    @DeleteMapping
     public ResVo delHotelReservation(HotelReservationDelDto dto){
         return service.delHotelReservation(dto);
     }
-    //영웅
-
-
     //-------------------------------------------------예약내역 출력-------------------------------------------------------
-    @GetMapping("/reservation")
-    public List<ResInfoVo> getUserReservation(ResInfoDto dto){
+    @GetMapping
+    public List<ResInfoVo> getUserReservation(int page){
         checkUser();
-        return service.getUserReservation(dto);
+        int userPk= authenticationFacade.getLoginUserPk();
+        return service.getUserReservation(userPk,page);
     }
-    //승준
 
 }

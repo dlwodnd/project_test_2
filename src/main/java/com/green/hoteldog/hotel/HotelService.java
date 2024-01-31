@@ -2,6 +2,7 @@ package com.green.hoteldog.hotel;
 
 
 import com.green.hoteldog.common.AppProperties;
+import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.MyFileUtils;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.exceptions.AuthorizedErrorCode;
@@ -10,7 +11,6 @@ import com.green.hoteldog.exceptions.CustomException;
 import com.green.hoteldog.exceptions.HotelErrorCode;
 import com.green.hoteldog.hotel.model.*;
 import com.green.hoteldog.security.AuthenticationFacade;
-import com.green.hoteldog.user.models.UserHotelFavDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openkoreantext.processor.OpenKoreanTextProcessorJava;
@@ -61,81 +61,80 @@ public class HotelService {
         // dog pk size 값 넣기
         if (dto.getHotelOptionPk() != null){
             dto.setOptionPkSize(dto.getHotelOptionPk().size());
-        } else if(dto.getDogPkSize() != 0){
-            List<Integer> blankList =dto.getDogInfo()
-                    .stream()
-                    .map(DogSizeEa::getDogSize)
-                    .collect(Collectors.toList());
-
-            dto.setDogPkSize(blankList.size());
         }
+
+
         // 1. 등록된 반려견 정보와 주소로 사용자화
         // 1-1. 비회원 첫화면 - 최신순
-        if(dto.getMainFilter() == 0 && dto.getUserPk() == 0 && dto.getAddress() == null && dto.getFromDate() == null
-                && dto.getToDate() == null && dto.getDogInfo().size() == 0 && dto.getSearch() == null
+        if(dto.getUserPk() == 0 && dto.getMainFilter() == 0 && dto.getAddress() == null && dto.getFromDate() == null
+                && dto.getToDate() == null && dto.getDogInfo() == null && dto.getSearch() == null
                 && dto.getHotelOptionPk() == null){
             allVo.setHotelList(mapper.selHotelListToNonMember(dto));
             log.info("allVo : {}", allVo);
             return allVo;
-            // 1-2. 회원 첫화면 - 주소, 반려견 강아지 사이즈
+            // 1-2. 회원 첫화면 - 주소, 반려견 강아지 사이즈(개별방 단체방 모두 고려)
         } else if (dto.getMainFilter() == 0 && dto.getUserPk() > 0 && dto.getAddress() != null && dto.getFromDate() == null
-                && dto.getToDate() == null && dto.getDogInfo().size() == 0 && dto.getSearch() == null
+                && dto.getToDate() == null && dto.getDogInfo() == null && dto.getSearch() == null
                 && dto.getHotelOptionPk() == null){
+
             // 1-2-1. 회원 pk로 강아지 사이즈, 주소 pk 셀렉
-            HotelListSelProcDto pDto = mapper.selUserInfoToUserPk(dto);
+            List<HotelListSelProcDto> pDto = mapper.selUserInfoToUserPk(dto);
+            for ( HotelListSelProcDto procDto : pDto ) {
+                dto.setAddress(procDto.getAddress()); // 다 같은값
+                if(procDto.getDogSizePks() > 0){
+                    dto.getDogSizePks().add(procDto.getDogSizePks());
+                }
+            }
+            if(dto.getDogSizePks().size() != 0){
+                dto.setDogPkSize(dto.getDogSizePks().size());
+            }
+
             // 1-2-1-1. 등록 된 강아지가 없을 때
-            if(pDto.getDogSizePks().size() == 0){
-                allVo.setHotelList(mapper.selHotelListAsUserAddress(pDto));
+            if(dto.getDogSizePks().size() == 0){
+                allVo.setHotelList(mapper.selHotelListAsUserAddress(dto));
                 log.info("allVo : {}", allVo);
                 return allVo;
-            }/* else { // 해당 프로젝트 기획 변경으로 삭제
+            }else {
                 // 1-2-1-2. 등록 된 강아지가 있을 때
-                allVo.setHotelList(mapper.selHotelListAsUserAddressAndDogInformation(pDto));
+                allVo.setHotelList(mapper.selHotelListAsUserAddressAndDogInformation(dto));
                 log.info("allVo : {}", allVo);
                 return allVo;
-            }*/
+            }
             // 2. 호텔 이름 검색 시 리스트
         } else if (dto.getMainFilter() == 0 && dto.getSearch() != null && dto.getAddress() == null && dto.getFromDate() == null
-                && dto.getToDate() == null && dto.getDogInfo().size() == 0 && dto.getHotelOptionPk() == null){
-            // 2-1. 정확하게 입력된 호텔이름을 먼저 셀렉트
+                && dto.getToDate() == null && dto.getDogInfo() == null && dto.getHotelOptionPk() == null){
+            // 2-1. 정확하게 입력된 호텔 이름을 먼저 셀렉트
             List<HotelListSelVo> accurateHotelList = mapper.selHotelListToAccurateSearch(dto);
             log.info("accurateHotelList.size() : {}", accurateHotelList.size());
+            if(accurateHotelList.size() > 0){
+                allVo.setHotelList(accurateHotelList);
+                return allVo;
+            }
 
             // 2-2. 형태소 분석기 사용, String을 각각의 단어로 String 리스트를 만들어 줍니다.
+            // step 1 : 문장 분리
+            // step 2 : 형태소 분석 및 품사 태깅
+
+            dto.setSearch(dto.getSearch().replaceAll("애견", ""));
+            dto.setSearch(dto.getSearch().replaceAll("호텔", ""));
+            log.info("search : {}", dto.getSearch());
+
             String text = dto.getSearch();
             CharSequence normalized = OpenKoreanTextProcessorJava.normalize(text);
             Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize(normalized);
             List<String> tokensToStrList = OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens);
             dto.setTokensToStrList(tokensToStrList);
             log.info("tokensToStrList : {}", tokensToStrList);
-            // 나중에 에러 뜨면 if문 작성
-            int index1 = tokensToStrList.indexOf("호텔");
-            int index2 = tokensToStrList.indexOf("애견");
-            log.info("index1 : {}", index1);
-            tokensToStrList.remove(index1);
-            log.info("index2 : {}", index2);
-            tokensToStrList.remove(index2);
-            log.info("tokensToStrList : {}", tokensToStrList);
 
-            List<HotelListSelVo> HotelList = mapper.selHotelListToSearch(dto);
+            List<HotelListSelVo> hotelList = mapper.selHotelListToSearch(dto);
+            log.info("hotelList = {}", hotelList);
+
             // page가 1일 때에만 정확한 검색어를 첫번째로 저장해서 보냅니다.
             // 정확한 검색어 수만큼 따라 마지막 인덱스 제거
-            if(accurateHotelList.size() > 0 && dto.getPage() == 1){
-                accurateHotelList.addAll(HotelList);
-                allVo.setHotelList(accurateHotelList);
-                log.info("allVo : {}", allVo);
-                for (int i = 0; i < accurateHotelList.size(); i++) {
-                    allVo.getHotelList().remove(allVo.getHotelList().size() - 1);
-                }
-                return allVo;
-            }else {
-                allVo.setHotelList(HotelList);
-                log.info("allVo : {}", allVo);
-                return allVo;
-            }
-            // 나중에 시간날 때 정확한 순으로 정렬하는 코드 작성
+            accurateHotelList.addAll(hotelList);
+            allVo.setHotelList(accurateHotelList);
+            // 나중에 시간날 때 배열과 일치하는 순으로 정확도로 정렬하는 코드 작성
             // String[] filteredArray = filterAndSortStrings(vo.getHotelNm(), "a", "e");
-
             /*
             예시
             "부평싸이호텔" 검색 시
@@ -155,8 +154,6 @@ public class HotelService {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate fromDate = LocalDate.parse(dto.getFromDate(), formatter);
                 LocalDate toDate = LocalDate.parse(dto.getToDate(), formatter);
-
-
 
                 // 년, 월, 일 추출
                 int fromYear = fromDate.getYear();
@@ -180,6 +177,7 @@ public class HotelService {
                     log.info("date : {}", dateList);
                 }
                 dto.setDate(dateRange);
+
                 // 날짜 하나만 들어 올 때 (대실)
             } else if(dto.getFromDate() != null && dto.getFromDate() == null){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -195,64 +193,68 @@ public class HotelService {
 
             // 개별 방에 관한 호텔 pk 셀렉
             // 날짜, 강아지 정보가 안들어 오면 실행x
-            List<Integer> list = new ArrayList<>();
-            DogSizeInfoIn dogSizeInfo = new DogSizeInfoIn();
-            dogSizeInfo.setDates(strDateList);
-            for ( DogSizeEa ea : dto.getDogInfo() ) {
-                dogSizeInfo.setDogSize(ea.getDogSize());
-                dogSizeInfo.setDogCount(ea.getDogCount());
-                List<Integer> hotelPk1 = mapper.selHotelPkToIndividualDogInfo(dogSizeInfo);
-                list.addAll(hotelPk1);
-            }
-            // 단체 방에 관한 호텔 pk 셀렉
-            DogSizeInfoGr dogSizeinfoGr = new DogSizeInfoGr();
-            dogSizeinfoGr.setDate(dateRange);
-            List<Integer> dogSize = new ArrayList<>();
-            int allCount = 0;
-            for ( DogSizeEa ea : dto.getDogInfo() ) {
-                allCount =+ ea.getDogCount();
-                dogSize.add(ea.getDogSize());
-            }
-            dogSizeinfoGr.setAllDogCount(allCount);
-            Integer maxValue = dogSize.stream()
-                    .mapToInt(x -> x)
-                    .max()
-                    .orElse(0); // 예외 시
-            log.info("maxValue : {}", maxValue);
-            dogSizeinfoGr.setBiggestDogSize(maxValue);
-            List<Integer> hotelPk2 = mapper.selHotelPkToGroupDogInfo(dogSizeinfoGr);
-            list.addAll(hotelPk2);
-            // 단체 방 + 개별 방 종합 호텔 pk 셀렉 구현
+            if(dto.getFromDate() != null && dto.getDogInfo() != null){
+                List<Integer> list = new ArrayList<>();
+                DogSizeInfoIn dogSizeInfo = new DogSizeInfoIn();
+                dogSizeInfo.setDates(strDateList);
+                for ( DogSizeEa ea : dto.getDogInfo() ) {
+                    dogSizeInfo.setDogSize(ea.getDogSize());
+                    dogSizeInfo.setDogCount(ea.getDogCount());
+                    List<Integer> hotelPk1 = mapper.selHotelPkToIndividualDogInfo(dogSizeInfo);
+                    list.addAll(hotelPk1);
+                }
+                // 단체 방에 관한 호텔 pk 셀렉
+                DogSizeInfoGr dogSizeinfoGr = new DogSizeInfoGr();
+                dogSizeinfoGr.setDate(dateRange);
+                List<Integer> dogSize = new ArrayList<>();
+                int allCount = 0;
+                for ( DogSizeEa ea : dto.getDogInfo() ) {
+                    allCount =+ ea.getDogCount();
+                    dogSize.add(ea.getDogSize());
+                }
+                dogSizeinfoGr.setAllDogCount(allCount);
+                Integer maxValue = dogSize.stream()
+                        .mapToInt(x -> x)
+                        .max()
+                        .orElse(0); // 예외 시
+                log.info("maxValue : {}", maxValue);
+                dogSizeinfoGr.setBiggestDogSize(maxValue);
+                List<Integer> hotelPk2 = mapper.selHotelPkToGroupDogInfo(dogSizeinfoGr);
+                list.addAll(hotelPk2);
+                // 단체 방 + 개별 방 종합 호텔 pk 셀렉 구현
 
 
-            // 중복 제거
-            List<Integer> filteredPk = list.stream().distinct().collect(Collectors.toList());
-            log.info("filteredPk : {}", filteredPk);
-            dto.setFilteredPk(filteredPk);
-            allVo.setHotelList(mapper.selHotelListToFilter(dto));
+                // 중복 제거
+                List<Integer> filteredPk = list.stream().distinct().collect(Collectors.toList());
+                log.info("filteredPk : {}", filteredPk);
+                dto.setFilteredPk(filteredPk);
+            }
+            List<HotelListSelVo> voList = mapper.selHotelListToFilter(dto);
+            allVo.setHotelList(voList);
 
             log.info("allVo : {}", allVo);
             return allVo;
         }
-        return null;
+        return allVo;
     }
     // 영웅
 
 
 
     //----------------------------------------------호텔 북마크-----------------------------------------------------------
-    public ResVo toggleHotelBookMark(UserHotelFavDto dto){
-        dto.setUserPk(authenticationFacade.getLoginUserPk());
-        int result=mapper.delHotelBookMark(dto);
+    public ResVo toggleHotelBookMark(int hotelPk,int userPk){
+        int result=mapper.delHotelBookMark(userPk,hotelPk);
         if(result==1){
             return new ResVo(3);
         }
-        int result2= mapper.insHotelBookMark(dto);
+        int result2= mapper.insHotelBookMark(userPk,hotelPk);
         return new ResVo(result2);
     }
-
-    public List<HotelBookMarkListVo> getHotelBookmarkList(int userPk){
-        List<HotelBookMarkListVo> getBookMarkList=mapper.getHotelBookMark(userPk);
+    //----------------------------------------------북마크 한 호텔 리스트---------------------------------------------------
+    public List<HotelBookMarkListVo> getHotelBookmarkList(int userPk,int page){
+        int fromPage=(page-1)*Const.HOTEL_FAV_COUNT_PER_PAGE;
+        int toPage=page*Const.HOTEL_FAV_COUNT_PER_PAGE;
+        List<HotelBookMarkListVo> getBookMarkList=mapper.getHotelBookMark(userPk,fromPage,toPage);
         return getBookMarkList;
 
     }
@@ -300,9 +302,6 @@ public class HotelService {
             ableListDto.setHotelPk(hotelPk);
             //메인페이지 첫화면은 호텔pk만 보내고 정리해서 줌.
             List<HotelRoomResInfoByMonth> hotelResInfoVos = iWillShowYouAbleDatesWithRoom(ableListDto);
-            if(hotelResInfoVos.size()==0){
-
-            }
             //박스갈이 & 데이터빼내기&검증
             List<HotelRoomEaByDate> eaByDates = new ArrayList<>();
 
@@ -350,53 +349,55 @@ public class HotelService {
             }
             return hotelInfoEntity;
         }
-        return null;
+        throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
     }
 
 
     //----------------------------------------날짜 선택했을때 가능한 방 리스트------------------------------------------------
     public List<HotelRoomEaByDate> whenYouChooseDates(int hotelPk,LocalDate startDate,LocalDate endDate){
-        if(hotelPk==0||startDate==null||endDate==null){
+        if (hotelPk == 0 || startDate == null || endDate == null) {
             throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
         }
-        HotelRoomAbleListDto ableListDto=new HotelRoomAbleListDto();
+        if(hotelPk>0) {
+            HotelRoomAbleListDto ableListDto = new HotelRoomAbleListDto();
             ableListDto.setHotelPk(hotelPk);
             ableListDto.setEndDate(endDate.toString());
             ableListDto.setStartDate(startDate.toString());
-        List<HotelRoomResInfoByMonth> areYouChooseDates=iWillShowYouAbleDatesWithRoom(ableListDto);
+            List<HotelRoomResInfoByMonth> areYouChooseDates = iWillShowYouAbleDatesWithRoom(ableListDto);
 
-        List<HotelRoomEaByDate> whenYouSelDates=new ArrayList<>();
-        List<LocalDate> getList=startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
-        List<String> getDateList=getList
-                .stream()
-                .map(date->date.toString())
-                .collect(Collectors.toList());
-
-        getList.forEach(System.out::println);
-        List<HotelRoomEaByDate> updatedList = new ArrayList<>();
-
-        getDateList.forEach(date -> {
-            List<HotelRoomEa> eaList = areYouChooseDates
+            List<HotelRoomEaByDate> whenYouSelDates = new ArrayList<>();
+            List<LocalDate> getList = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
+            List<String> getDateList = getList
                     .stream()
-                    .filter(s -> s.getRoomDate().equals(date.toString()))
-                    .map(roomInfo -> {
-                        HotelRoomEa roomEa = new HotelRoomEa();
-                        roomEa.setHotelRoomNm(roomInfo.getHotelRoomNm());
-                        roomEa.setRoomLeftEa(roomInfo.getRoomLeftEa());
-                        return roomEa;
-                    })
+                    .map(date -> date.toString())
                     .collect(Collectors.toList());
 
-            HotelRoomEaByDate eaByDate = new HotelRoomEaByDate();
-            eaByDate.setDate(date.toString());
-            eaByDate.setRoomEas(eaList);
-            log.info("eaList : {}",eaList);
-            updatedList.add(eaByDate);
-        });
+            getList.forEach(System.out::println);
+            List<HotelRoomEaByDate> updatedList = new ArrayList<>();
 
-        whenYouSelDates.addAll(updatedList);
-        return whenYouSelDates;
+            getDateList.forEach(date -> {
+                List<HotelRoomEa> eaList = areYouChooseDates
+                        .stream()
+                        .filter(s -> s.getRoomDate().equals(date.toString()))
+                        .map(roomInfo -> {
+                            HotelRoomEa roomEa = new HotelRoomEa();
+                            roomEa.setHotelRoomNm(roomInfo.getHotelRoomNm());
+                            roomEa.setRoomLeftEa(roomInfo.getRoomLeftEa());
+                            return roomEa;
+                        })
+                        .collect(Collectors.toList());
 
+                HotelRoomEaByDate eaByDate = new HotelRoomEaByDate();
+                eaByDate.setDate(date.toString());
+                eaByDate.setRoomEas(eaList);
+                log.info("eaList : {}", eaList);
+                updatedList.add(eaByDate);
+            });
+
+            whenYouSelDates.addAll(updatedList);
+            return whenYouSelDates;
+        }
+        throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
     }
     //------------------------------------날짜랑 강아지 선택했을 때 가능한 방 리스트--------------------------------------------
     public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(int hotelPk,LocalDate startDate,LocalDate endDate,List<Integer> dogs){
@@ -425,7 +426,7 @@ public class HotelService {
 
             List<HotelRoomEaByDate> whenYouChooseDatesAndDogs=new ArrayList<>();
             List<HotelRoomResInfoByMonth> areYouSure =mapper.getHotelFilterRoomResInfo(hotelPk,startDate.toString(),endDate.toString(),howMany,large);
-
+            
             getListDates.forEach(date -> {
                 List<HotelRoomEa> eaList = areYouSure
                         .stream()
@@ -453,7 +454,7 @@ public class HotelService {
 
     public List<HotelRoomResInfoByMonth> iWillShowYouAbleDatesWithRoom(HotelRoomAbleListDto dto) {
         if (dto.getHotelPk() == 0) {
-            throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
+            throw new CustomException(HotelErrorCode.NON_EXIST_HOTEL_PK);
         }
         //시작 끝 날짜만 입력 되어있는 상태.(예약 2단계)
         if (!(dto.getEndDate() == null && dto.getStartDate() == null)) {
@@ -461,7 +462,9 @@ public class HotelService {
             log.info("startDate : {}", dto.getStartDate());
             log.info("endDate : {}", dto.getEndDate());
             List<HotelRoomResInfoByMonth> resInfoByMonths=mapper.getHotelRoomResInfo(dto.getHotelPk(), dto.getStartDate(), dto.getEndDate());
-
+            if(resInfoByMonths.size()==0){
+                throw new CustomException(HotelErrorCode.NON_EXIST_ROOM_DATE);
+            }
             return resInfoByMonths;
             // 시작 , 끝 날짜 설정X, (예약 1단계 or 상세페이지)
         } else {
@@ -472,7 +475,7 @@ public class HotelService {
 
             List<HotelRoomResInfoByMonth> infoByMonths=mapper.getHotelRoomResInfo(dto.getHotelPk(), startDate, endDate);
             if(infoByMonths.size()==0){
-                throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
+                throw new CustomException(HotelErrorCode.NON_EXIST_ROOM_DATE);
             }
             return infoByMonths;
         }
@@ -505,7 +508,6 @@ public class HotelService {
         }
         return monthDateList;
     }
-    //승준
 
     // 호텔 더미데이터 작성
     @Transactional(rollbackFor = Exception.class)
