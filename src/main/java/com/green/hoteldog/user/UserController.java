@@ -58,17 +58,18 @@ public class UserController {
     //유저 정보 불러오기
     @PostMapping("/info")
     @Operation(summary = "회원정보 불러오기")
-    public UserInfoVo userInfo (@RequestBody UserInfoDto dto){
+    public UserInfoVo userInfo (@RequestBody @Valid UserInfoDto dto){
         return service.getUserInfo(dto);
     }
     //유저 정보 수정
     @PutMapping("/info")
     @Operation(summary = "유저 정보수정")
-    public ResVo updUserInfo (@RequestBody UserUpdateDto dto){
+    public ResVo updUserInfo (@RequestBody @Valid UserUpdateDto dto){
         return service.updUserInfo(dto);
     }
     //리프레쉬 토큰 재발급
     @GetMapping("/refresh-token")
+    @Operation(summary = "리프레쉬 토큰 재발급")
     public RefreshTokenVo getRefreshToken (HttpServletRequest request){
         return service.getRefreshToken(request);
     }

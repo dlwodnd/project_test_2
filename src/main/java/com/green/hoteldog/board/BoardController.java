@@ -22,7 +22,14 @@ public class BoardController {
 
     //게시글 리스트
     @GetMapping
-    @Operation(summary = "게시글 리스트", description = "게시글 리스트<br>searchType : 0 = 제목 검색<br>searchType : 1 = 내용 검색<br>searchType : 2 = 닉네임 검색")
+    @Operation(summary = "게시글 리스트", description =
+            "게시글 리스트<br>searchType : 0 = 제목 검색" +
+            "<br>searchType : 1 = 내용 검색" +
+            "<br>searchType : 2 = 닉네임 검색" +
+            "<br> boardCategoryPk : 0 = 전체 카테고리 게시글 " +
+            "<br> boardCategoryPk : 1 = 공지 게시글 " +
+            "<br> boardCategoryPk : 2 = 자유게시판 게시글 " +
+            "<br> boardCategoryPk : 3 = 정보 게시글 ")
     public GetSimpleBoardVo getBoardList(@Valid GetBoardListDto dto){
         log.info("GetBoardListDto dto : {}",dto);
         return service.getBoardList(dto);
