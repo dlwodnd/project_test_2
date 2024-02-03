@@ -6,6 +6,7 @@ import com.green.hoteldog.exceptions.BoardErrorCode;
 import com.green.hoteldog.exceptions.CustomException;
 import com.green.hoteldog.review.models.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/review")
+@Tag(name = "리뷰 API",description = "리뷰 관련 처리")
 public class ReviewController {
     private final ReviewService service;
 
@@ -27,8 +29,10 @@ public class ReviewController {
             "유저가 예약한 예약상태가 체크아웃 상태일 경우만 가능")
     public ResVo postReview(@RequestPart(required = false) List<MultipartFile> pics,
                             @RequestPart @Valid ReviewInsDto dto) {
-        if (pics.size() > 3){
-            throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
+        if(pics != null){
+            if (pics.size() > 3){
+                throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
+            }
         }
         dto.setPics(pics);
         return service.insReview(dto);
@@ -38,8 +42,10 @@ public class ReviewController {
     @Operation(summary = "리뷰 수정", description = "리뷰 수정<br>사진 등록은 postman으로 테스트")
     public ResVo putReview(@RequestPart(required = false) List<MultipartFile> pics,
                            @RequestPart @Valid ReviewUpdDto dto) {
-        if (pics.size() > 3){
-            throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
+        if(pics != null){
+            if (pics.size() > 3){
+                throw new CustomException(BoardErrorCode.PICS_SIZE_OVER);
+            }
         }
         dto.setPics(pics);
         return service.putReview(dto);
@@ -64,9 +70,11 @@ public class ReviewController {
     public ResVo delReview(@Valid DelReviewDto dto){
         return service.delReview(dto);
     }
+
     //-------------------------------------------상세페이지 리뷰 페이지네이션-------------------------------------------------
-    @GetMapping("/review/{hotel_pk}")
-    public List<HotelReviewSelVo> getHotelReview(@PathVariable ("hotel_pk") int hotelPk, @RequestParam int page){
+    @GetMapping("/{hotel_pk}")
+    @Operation(summary = "리뷰 페이지네이션",description = "상세페이지 리뷰 페이지네이션 기능")
+    public List<HotelReviewSelVo> getHotelReview(@PathVariable ("hotel_pk") int hotelPk, int page){
         HotelReviewSelDto dto = new HotelReviewSelDto();
         dto.setRowCount(Const.REVIEW_COUNT_PER_PAGE);
         dto.setHotelPk(hotelPk);

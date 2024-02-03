@@ -2,7 +2,6 @@ package com.green.hoteldog.reservation;
 
 import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.ResVo;
-import com.green.hoteldog.exceptions.CommonErrorCode;
 import com.green.hoteldog.exceptions.CustomException;
 import com.green.hoteldog.exceptions.ReservationErrorCode;
 import com.green.hoteldog.reservation.model.*;
@@ -32,8 +31,8 @@ public class ReservationService {
             if(dtos.getUserPk() == 0){
                 throw new CustomException(ReservationErrorCode.UNKNOWN_USER_PK);
             }
-            int respk = mapper.insHotelReservation(dtos);
-            dtos.setResPk(respk);
+            int affectedrows = mapper.insHotelReservation(dtos);
+            dtos.setResPk(dtos.getResPk());
             if (dtos.getResPk() == null){
                 throw new CustomException(ReservationErrorCode.RESERVATION_TABLE_REGISTRATION_FAILED); // 예약 테이블에 등록 실패
             }
@@ -75,9 +74,28 @@ public class ReservationService {
             }
         }
 
-        int affectedRows3 = mapper.updRemainedHotelRoom(updList);
-        if(affectedRows3 == 0){
-            throw new CustomException(CommonErrorCode.INVALID_PARAMETER);
+        /* stream 이용한 코드 3중for문X 2024-01-31*/
+
+//        List<HotelReservationUpdProcDto> procDtoList=new ArrayList<>();
+//        dto.stream()
+//                .flatMap(hotelReservationInsDto ->
+//                    hotelReservationInsDto.getDogInfo().stream()
+//                            .map(dogInfo -> {
+//                                HotelReservationUpdProcDto procDto=new HotelReservationUpdProcDto();
+//                                procDto.setHotelRoomPk(dogInfo.getHotelRoomPk());
+//                                List<LocalDate> dateList=hotelReservationInsDto
+//                                        .getToDate()
+//                                        .datesUntil(hotelReservationInsDto.getToDate().plusDays(1)).collect(Collectors.toList());
+//                                procDto.setDate(dateList);
+//                                return procDtoList.add(procDto);
+//                            })
+//                ).collect(Collectors.toList());
+
+        try {
+            int affectedRows3 = mapper.updRemainedHotelRoom(updList);
+            log.info("affectedRows3 : {}", affectedRows3);
+        }catch (Exception e){
+            throw new CustomException(ReservationErrorCode.NO_ROOMS_AVAILABLE_FOR_THIS_DATE);
         }
         return new ResVo(Const.SUCCESS);
     }
@@ -145,9 +163,9 @@ public class ReservationService {
     }
     //--------------------------------------------------예약 정보---------------------------------------------------------
     public List<ResInfoVo> getUserReservation(int userPk,int page){
-        int fromPage=(page-1)*Const.RES_LIST_COUNT_PER_PAGE;
-        int toPage=page*Const.RES_LIST_COUNT_PER_PAGE;
-        List<ResInfoVo> resInfoVos = mapper.getUserReservation(userPk,fromPage,toPage);
+        int perPage=Const.RES_LIST_COUNT_PER_PAGE;
+        int pages=(page-1)*Const.RES_LIST_COUNT_PER_PAGE;
+        List<ResInfoVo> resInfoVos = mapper.getUserReservation(userPk,perPage,pages);
         List<Integer> resPkList = resInfoVos
                 .stream()
                 .map(ResInfoVo::getResPk)

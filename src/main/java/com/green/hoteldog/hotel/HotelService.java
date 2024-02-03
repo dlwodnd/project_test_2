@@ -38,8 +38,8 @@ public class HotelService {
 
 
     //-----------------------------------------------호텔 광고 리스트 셀렉트------------------------------------------------
-    public List<HotelListSelVo> getHotelAdvertiseList(HotelListSelDto dto){
-        return mapper.selHotelAdvertiseList(dto);
+    public List<HotelListSelVo> getHotelAdvertiseList(){
+        return mapper.selHotelAdvertiseList();
     }
     //-----------------------------------------------호텔 리스트 셀렉트----------------------------------------------------
     public HotelListSelAllVo getHotelList(HotelListSelDto dto){
@@ -52,7 +52,7 @@ public class HotelService {
         }
         dto.setUserPk(authenticationFacade.getLoginUserPk());
         // 0. 랜덤 광고 리스트 셀렉
-        List<HotelListSelVo> hotelAdvertiseList = mapper.selHotelAdvertiseList(dto);
+        List<HotelListSelVo> hotelAdvertiseList = mapper.selHotelAdvertiseList();
         log.info("hotelAdvertiseList : {}", hotelAdvertiseList);
         HotelListSelAllVo allVo = new HotelListSelAllVo();
         allVo.setHotelAdvertiseList(hotelAdvertiseList);
@@ -73,7 +73,7 @@ public class HotelService {
             log.info("allVo : {}", allVo);
             return allVo;
             // 1-2. 회원 첫화면 - 주소, 반려견 강아지 사이즈(개별방 단체방 모두 고려)
-        } else if (dto.getMainFilter() == 0 && dto.getUserPk() > 0 && dto.getAddress() != null && dto.getFromDate() == null
+        } else if (dto.getMainFilter() == 0 && dto.getUserPk() > 0 && dto.getAddress() == null && dto.getFromDate() == null
                 && dto.getToDate() == null && dto.getDogInfo() == null && dto.getSearch() == null
                 && dto.getHotelOptionPk() == null){
 
@@ -89,7 +89,7 @@ public class HotelService {
                 dto.setDogPkSize(dto.getDogSizePks().size());
             }
 
-            // 1-2-1-1. 등록 된 강아지가 없을 때
+            // 1-2-1-1. 등록된 강아지가 없을 때
             if(dto.getDogSizePks().size() == 0){
                 allVo.setHotelList(mapper.selHotelListAsUserAddress(dto));
                 log.info("allVo : {}", allVo);
@@ -245,16 +245,29 @@ public class HotelService {
     public ResVo toggleHotelBookMark(int hotelPk,int userPk){
         int result=mapper.delHotelBookMark(userPk,hotelPk);
         if(result==1){
-            return new ResVo(3);
+            return new ResVo(2);
         }
         int result2= mapper.insHotelBookMark(userPk,hotelPk);
         return new ResVo(result2);
     }
     //----------------------------------------------북마크 한 호텔 리스트---------------------------------------------------
     public List<HotelBookMarkListVo> getHotelBookmarkList(int userPk,int page){
-        int fromPage=(page-1)*Const.HOTEL_FAV_COUNT_PER_PAGE;
-        int toPage=page*Const.HOTEL_FAV_COUNT_PER_PAGE;
-        List<HotelBookMarkListVo> getBookMarkList=mapper.getHotelBookMark(userPk,fromPage,toPage);
+        int perPage=Const.HOTEL_LIST_COUNT_PER_PAGE;
+        int pages=page*Const.HOTEL_FAV_COUNT_PER_PAGE;
+        List<HotelBookMarkListVo> getBookMarkList=mapper.getHotelBookMark(userPk,pages,perPage);
+        List<Integer> pkList=getBookMarkList
+                .stream()
+                .map(HotelBookMarkListVo::getHotelPk)
+                .collect(Collectors.toList());
+
+        List<HotelBookMarkPicVo> picVoList=mapper.getHotelBookMarkPic(pkList);
+
+        getBookMarkList.forEach(vo ->
+                picVoList.stream()
+                        .filter(picVo -> vo.getHotelPk() == picVo.getHotelPk())
+                        .findFirst()
+                        .ifPresent(picVo -> vo.setHotelPic(picVo.getPic()))
+        );
         return getBookMarkList;
 
     }
@@ -573,7 +586,7 @@ public class HotelService {
             return new ResVo(0);
         }
         if(hotelPic != null){
-            String target = "/hotel/"+dto.getHotelPk() + "/room" + dto.getHotelRoomNm();
+            String target = "/hotel/"+dto.getHotelPk() + "/room/" + dto.getHotelRoomNm();
             String saveFileNm = myFileUtils.transferTo(hotelPic,target);
             dto.setRoomPic(saveFileNm);
         }

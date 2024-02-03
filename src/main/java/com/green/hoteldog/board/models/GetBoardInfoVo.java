@@ -9,6 +9,8 @@ import java.util.List;
 public class GetBoardInfoVo {
     @Schema(description = "게시글 pk")
     private int boardPk;
+    @Schema(description = "게시글 카테고리 pk")
+    private int boardCategoryPk;
     @Schema(description = "게시글 제목")
     private String title;
     @Schema(description = "게시글 작성자 pk")
@@ -25,6 +27,8 @@ public class GetBoardInfoVo {
     private List<String> pics;
     @Schema(description = "최대 페이지 수")
     private int commentMaxPage;
+    @Schema(description = "댓글 개수")
+    private int commentCount;
     @Schema(description = "댓글 정보")
     private List<CommentInfoVo> comments;
 }

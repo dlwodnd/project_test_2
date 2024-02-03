@@ -1,6 +1,7 @@
 package com.green.hoteldog.reservation.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -9,7 +10,9 @@ import java.util.List;
 
 
 @Data
+@Schema(title = "호텔 예약 삭제 DTO")
 public class HotelReservationDelDto {
+    @Schema(title = "예약 pk")
     private int resPk;
     @JsonIgnore
     private int userPk;

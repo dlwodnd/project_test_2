@@ -36,12 +36,12 @@
 
     <update id="updRemainedHotelRoom">
         <foreach collection="list" item="item">
-            UPDATE t_hotel_room_info_date
-            SET room_left_ea = room_left_ea - 1
+            UPDATE t_hotel_res_room
+            SET hotel_left_ea = hotel_left_ea - 1
             WHERE
             <foreach collection="item.date" item="subItem" open="(" close=")" separator="OR">
                 (room_date = #{subItem} AND hotel_room_pk = #{item.hotelRoomPk})
-            </foreach>
+            </foreach>;
         </foreach>
     </update>
     <!---->
@@ -102,12 +102,12 @@
 
     <update id="updRemainedHotelRoom2">
         <foreach collection="hotelRoomPk" item="item">
-            UPDATE t_hotel_room_info_date
-            SET room_left_ea = room_left_ea - 1
+            UPDATE t_hotel_res_room
+            SET hotel_left_ea = hotel_left_ea + 1
             WHERE
             <foreach collection="date" item="item2" open="(" close=")" separator="OR">
                 (room_date = #{item2} AND hotel_room_pk = #{item})
-            </foreach>
+            </foreach>;
         </foreach>
     </update>
     <!--예약강아지 리스트-->
@@ -126,6 +126,7 @@
         SELECT D.hotel_nm AS hotelNm,D.hotel_call AS hotelCall
         ,   C.hotel_room_nm AS hotelRoomNm ,A.from_date AS fromDate
         ,   A.to_date AS toDate,C.room_pic AS roomPic ,A.res_pk AS resPk
+        ,	A.res_status AS resStatus
         FROM t_reservation A
         JOIN t_res_comprehensive_info B
         ON A.res_pk=B.res_pk
@@ -133,7 +134,7 @@
         ON B.hotel_room_pk=C.hotel_room_pk
         JOIN t_hotel D
         ON A.hotel_pk=D.hotel_pk
-        WHERE A.user_pk=#{userPk} AND A.res_status=1
-        LIMIT #{fromPage} , #{toPage}
+        WHERE A.user_pk=#{userPk}
+        LIMIT #{pages} , #{perPage}
     </select>
 </mapper>

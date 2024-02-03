@@ -1,16 +1,15 @@
 package com.green.hoteldog.hotel;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.exceptions.CommonErrorCode;
 import com.green.hoteldog.exceptions.CustomException;
+import com.green.hoteldog.exceptions.HotelErrorCode;
 import com.green.hoteldog.hotel.model.*;
 import com.green.hoteldog.security.AuthenticationFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +22,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "호텔 API",description = "호텔 관련 처리")
 @RequestMapping("/api/hotel")
 public class HotelController {
     private final HotelService service;
@@ -38,8 +38,9 @@ public class HotelController {
     //----------------------------------------------- 호텔 광고 리스트-----------------------------------------------------
     // 새로고침 시 적용
     @GetMapping("/ad")
-    public List<HotelListSelVo> getHotelAdvertiseList(HotelListSelDto dto){
-        return service.getHotelAdvertiseList(dto);
+    @Operation(summary = "호텔 광고 리스트", description = "광고만 바뀌어야 할 때 광고 3개를 랜덤하게 출력하는 기능")
+    public List<HotelListSelVo> getHotelAdvertiseList(){
+        return service.getHotelAdvertiseList();
     }
 
     // 광고 + 호텔 리스트
@@ -59,6 +60,9 @@ public class HotelController {
     //--------------------------------------------------호텔 리스트-------------------------------------------------------
     // 0128 get방식 RequestParam으로 HotelListSelDto객체 받을 때 DogSizeEa를 String에서 int로 컨버트하여 mapping하려 했지만 실패
     @PostMapping
+    @Operation(summary = "호텔 + 광고 리스트 출력", description = "<h1>검색, 필터링, 하단 필터링, 사용자화 기능</h1>\n" +
+            "<h3><b>mainFilter(상단필터 사용여부)</b>, <b>filterType(하단필터 여부)</b> 값은 항상 필요하며, 이외의 값은 기능에 따라 추가적으로 보내주세요.</h3>\n" +
+    "단, 사용자가 입력한 기능 이외의 변수명과 값이 들어 온다면 잘못 입력 에러 리턴")
     public HotelListSelAllVo getHotelList(@RequestParam int page, @RequestBody @Valid HotelListSelDto dto) {
         log.info("HotelListSelDto dto : {}",dto);
         dto.setRowCount(Const.HOTEL_LIST_COUNT_PER_PAGE);
@@ -67,8 +71,9 @@ public class HotelController {
     }
     //-------------------------------------------------호텔 상세페이지 출력-------------------------------------------------
     @GetMapping
+    @Operation(summary = "호텔 상세페이지 전체화면", description = "호텔 상세페이지 전체화면 부분")
     public HotelInfoEntity getHotelDetail(@RequestParam("hotel_pk") int hotelPk){
-        HotelMainPageDto dto=new HotelMainPageDto();
+        HotelMainPageDto dto= new HotelMainPageDto();
         dto.setHotelPk(hotelPk);
 
         HotelInfoEntity mainPage=service.getHotelDetail(hotelPk);
@@ -76,27 +81,27 @@ public class HotelController {
     }
     //------------------------------------------호텔 상세페이지에서 날짜 선택했을때--------------------------------------------
     @GetMapping("/info")
-    public List<HotelRoomEaByDate> whenYouChooseDates(@JsonProperty int hotelPk,
-                                                      @JsonProperty LocalDate startDate,
-                                                      @JsonProperty LocalDate endDate){
+    @Operation(summary = "호텔 상세페이지->날짜 선택 시", description = "상세페이지에서 날짜 선택했을 때 그 날짜별로 가능한 방 리스트")
+    public List<HotelRoomEaByDate> whenYouChooseDates(int hotelPk,
+                                                      LocalDate startDate,
+                                                      LocalDate endDate){
 
         return service.whenYouChooseDates(hotelPk, startDate, endDate);
     }
     //--------------------------------------호텔 상세페이지에서 날짜 선택, 강아지 선택했을때-------------------------------------
     @GetMapping("/info/dogs")
-    public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(@JsonProperty int hotelPk,
-                                                             @JsonProperty LocalDate startDate,
-                                                             @JsonProperty LocalDate endDate,
-                                                             @RequestParam List<Integer> dogs){
+    @Operation(summary = "호텔 상세페이지->날짜선택->강아지 선택 시", description = "상세페이지에서 날짜 선택하고 강아지 선택 할 시에 나오는 방 리스트<br>" +
+            "등록한 강아지들의 사이즈Pk만 입력.")
+    public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(int hotelPk,
+                                                             LocalDate startDate,
+                                                             LocalDate endDate,
+                                                             List<Integer> dogs){
         return service.whenYouChooseDatesAndDogs(hotelPk, startDate, endDate, dogs);
     }
 
     //-----------------------------------------------------호텔 북마크----------------------------------------------------
     @GetMapping("/mark")
-    @Operation(summary = "좋아요 toggle", description = "toggle로 처리함<br>")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "좋아요 처리: result(1), 좋아요 취소: result(2)")
-    })
+    @Operation(summary = "호텔 북마크(좋아요)", description = "toggle로 처리함<br>. 북마크 등록 시 result : 1 , 북마크 등록 해제 시 : 2")
     public ResVo toggleHotelBookMark(int hotelPk){
         checkUser();
         int userPk=authenticationFacade.getLoginUserPk();
@@ -104,7 +109,11 @@ public class HotelController {
     }
     //-----------------------------------------------------호텔 북마크 리스트----------------------------------------------
     @GetMapping("/like")
-    public List<HotelBookMarkListVo> getHotelBookmarkList(@RequestParam int page){
+    @Operation(summary = "좋아요 한 호텔 리스트", description = "좋아요 한 호텔 리스트 Page별로 6개씩 출력")
+    public List<HotelBookMarkListVo> getHotelBookmarkList(int page){
+        if(page<=0){
+            throw new CustomException(HotelErrorCode.NON_EXIST_PAGE_DATA);
+        }
         checkUser();
         int userPk=authenticationFacade.getLoginUserPk();
         return service.getHotelBookmarkList(userPk,page);

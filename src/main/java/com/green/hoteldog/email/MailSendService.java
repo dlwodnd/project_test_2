@@ -72,7 +72,7 @@ public class MailSendService {
         String toMail = email;
         String title = "회원 가입 인증 이메일 입니다."; // 이메일 제목
         String content =
-                "나의 APP을 방문해주셔서 감사합니다." + 	//html 형식으로 작성 !
+                "저희 프로젝트 테스트에 참여해 주셔서 감사합니다." + 	//html 형식으로 작성 !
                         "<br><br>" +
                         "인증 번호는 " + authNumber + "입니다." +
                         "<br>" +
@@ -82,6 +82,7 @@ public class MailSendService {
     }
     public void mailSend(String setFrom,String toMail,String title,String content){
         MimeMessage message = mailSender.createMimeMessage();
+        redisUtil.setDataExpire(toMail,authNumber,60*5L);
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message,true,"UTF-8");
             helper.setFrom(setFrom);
@@ -92,6 +93,5 @@ public class MailSendService {
         }catch (MessagingException e){
             e.printStackTrace();
         }
-        redisUtil.setDataExpire(toMail,authNumber,60*5L);
     }
 }

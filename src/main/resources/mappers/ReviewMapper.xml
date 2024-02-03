@@ -60,7 +60,7 @@
     <update id="updReviewComment">
         UPDATE t_review
         SET comment = #{comment}
-        WHERE review_pk = #{reviewPk}
+        WHERE review_pk = #{reviewPk} AND res_pk = #{resPk}
     </update>
     <delete id="delReviewPics">
         DELETE FROM t_review_pic
@@ -68,11 +68,11 @@
     </delete>
     <insert id="insReviewFav">
         INSERT INTO t_review_fav
-        SET user_pk = #{userPk}
-        ,review_pk = #{reviewPk}
+        SET review_pk = #{reviewPk}
+        ,user_pk = #{userPk}
     </insert>
     <delete id="delReviewFav">
-        DELETE t_review_fav
+        DELETE FROM t_review_fav
         WHERE user_pk = #{userPk} AND review_pk = #{reviewPk}
     </delete>
     <select id="checkResStatus">
@@ -81,9 +81,23 @@
         WHERE user_pk = #{userPK} AND res_pk = #{resPk}
     </select>
     <delete id="delReview">
-        DELETE t_review
-        WHERE user_pk = #{userPk} AND review_pk = #{reviewPk} AND res_pk = #{reviewPk}
+        DELETE FROM t_review
+        WHERE review_pk = #{reviewPk} AND res_pk = #{resPk}
     </delete>
+    <select id="checkResUser">
+        SELECT user_pk
+        FROM t_reservation
+        WHERE user_pk = #{userPk} AND res_pk = #{resPk}
+    </select>
+    <delete id="delReviewPicsAll">
+        DELETE FROM t_review_pic
+        WHERE review_pk = #{reviewPk}
+    </delete>
+    <delete id="delReviewFavAll">
+        DELETE FROM t_review_fav
+        WHERE review_pk = #{reviewPk}
+    </delete>
+
     <!--재웅-->
 
 </mapper>

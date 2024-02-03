@@ -7,7 +7,7 @@ import java.util.List;
 
 @Mapper
 public interface HotelMapper {
-    List<HotelListSelVo> selHotelAdvertiseList(HotelListSelDto dto);
+    List<HotelListSelVo> selHotelAdvertiseList();
     List<HotelListSelVo> selHotelListToNonMember(HotelListSelDto dto);
     List<HotelListSelProcDto> selUserInfoToUserPk(HotelListSelDto dto);
     List<HotelListSelVo> selHotelListAsUserAddress(HotelListSelDto pDto);
@@ -27,7 +27,8 @@ public interface HotelMapper {
     List<HotelRoomInfoVo> getHotelRoomInfo(int hotelPk);
     int delHotelBookMark(int userPk,int hotelPk);
     int insHotelBookMark(int userPk,int hotelPk);
-    List<HotelBookMarkListVo> getHotelBookMark(int userPk,int fromPage,int toPage);
+    List<HotelBookMarkListVo> getHotelBookMark(int userPk,int pages,int perPage);
+    List<HotelBookMarkPicVo> getHotelBookMarkPic(List<Integer> pkList);
     Integer isMoreHotelReview(int hotelPk);
     List<HotelRoomResInfoByMonth> getHotelRoomResInfo(int hotelPk, String startDate, String endDate);
     List<HotelRoomResInfoByMonth> getHotelFilterRoomResInfo(int hotelPk,String startDate, String endDate,int howMany,int large );

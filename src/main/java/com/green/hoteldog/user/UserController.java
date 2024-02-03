@@ -2,8 +2,11 @@ package com.green.hoteldog.user;
 
 import com.green.hoteldog.common.RedisUtil;
 import com.green.hoteldog.common.ResVo;
+import com.green.hoteldog.exceptions.CustomException;
+import com.green.hoteldog.exceptions.UserErrorCode;
 import com.green.hoteldog.user.models.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "유저 API",description = "유저 관련 처리")
 @RequestMapping("/api/user")
 public class UserController {
     private final UserService service;
@@ -32,7 +36,7 @@ public class UserController {
 
         ResVo vo = new ResVo(0);
         if(dto.getEmailResponseVo().getResult() == 0){
-            //예외처리
+            throw new CustomException(UserErrorCode.NOT_CERTIFICATION_EMAIL);
         }
         if(dto.getEmailResponseVo().getResult() == 1){
             vo = service.userSignup(dto);
@@ -58,18 +62,17 @@ public class UserController {
     //유저 정보 불러오기
     @PostMapping("/info")
     @Operation(summary = "회원정보 불러오기")
-    public UserInfoVo userInfo (@RequestBody @Valid UserInfoDto dto){
+    public UserInfoVo userInfo (@RequestBody UserInfoDto dto){
         return service.getUserInfo(dto);
     }
     //유저 정보 수정
     @PutMapping("/info")
     @Operation(summary = "유저 정보수정")
-    public ResVo updUserInfo (@RequestBody @Valid UserUpdateDto dto){
+    public ResVo updUserInfo (@RequestBody UserUpdateDto dto){
         return service.updUserInfo(dto);
     }
     //리프레쉬 토큰 재발급
     @GetMapping("/refresh-token")
-    @Operation(summary = "리프레쉬 토큰 재발급")
     public RefreshTokenVo getRefreshToken (HttpServletRequest request){
         return service.getRefreshToken(request);
     }
