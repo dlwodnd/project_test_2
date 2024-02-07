@@ -9,6 +9,9 @@ import java.util.List;
 @Data
 @Schema(name = "호텔 예약 정보 (List)")
 public class ResInfoVo {
+    @Schema(name = "호텔 PK")
+    @JsonProperty(value = "hotel_pk")
+    private int hotelPK;
     @Schema(name = "호텔이름")
     @JsonProperty(value = "hotel_nm")
     private String hotelNm;
@@ -24,9 +27,12 @@ public class ResInfoVo {
     @Schema(name = "예약 끝나는 날짜")
     @JsonProperty(value = "to_date")
     private String toDate;
-    @Schema(name = "방 사진")
-    @JsonProperty(value = "room_pic")
-    private String roomPic;
+    @Schema(name = "호텔 주소")
+    @JsonProperty(value = "address_name")
+    private String addressName;
+    @Schema(name = "호텔사진")
+    @JsonProperty(value = "hotel_pic")
+    private String pic;
     @Schema(name = "예약 Pk")
     @JsonProperty(value = "res_pk")
     private int resPk;

@@ -253,27 +253,30 @@ public class HotelService {
     //----------------------------------------------북마크 한 호텔 리스트---------------------------------------------------
     public List<HotelBookMarkListVo> getHotelBookmarkList(int userPk,int page){
         int perPage=Const.HOTEL_LIST_COUNT_PER_PAGE;
-        int pages=page*Const.HOTEL_FAV_COUNT_PER_PAGE;
+        int pages=(page-1)*Const.HOTEL_FAV_COUNT_PER_PAGE;
         List<HotelBookMarkListVo> getBookMarkList=mapper.getHotelBookMark(userPk,pages,perPage);
+        log.info("getBookMarkList {}",getBookMarkList);
         List<Integer> pkList=getBookMarkList
                 .stream()
                 .map(HotelBookMarkListVo::getHotelPk)
                 .collect(Collectors.toList());
+        log.info("pkList {}",pkList);
 
-        List<HotelBookMarkPicVo> picVoList=mapper.getHotelBookMarkPic(pkList);
-
-        getBookMarkList.forEach(vo ->
-                picVoList.stream()
-                        .filter(picVo -> vo.getHotelPk() == picVo.getHotelPk())
-                        .findFirst()
-                        .ifPresent(picVo -> vo.setHotelPic(picVo.getPic()))
-        );
+//        List<HotelBookMarkPicVo> picVoList=mapper.getHotelBookMarkPic(pkList);
+//        log.info("picVoList {}", picVoList);
+//
+//        getBookMarkList.forEach(vo ->
+//                picVoList.stream()
+//                        .filter(picVo -> vo.getHotelPk() == picVo.getHotelPk())
+//                        .findFirst()
+//                        .ifPresent(picVo -> vo.setHotelPic(picVo.getPic()))
+//        );
         return getBookMarkList;
 
     }
     //--------------------------------------------호텔 상세페이지----------------------------------------------------------
     public HotelInfoEntity getHotelDetail(int hotelPk){
-        if(hotelPk>0) {
+        if(hotelPk > 0) {
             int userPk= authenticationFacade.getLoginUserPk();
             log.info("userPk : {}",userPk);
 
@@ -282,10 +285,28 @@ public class HotelService {
             // 호텔 기본적인 정보.
             HotelInfoVo hotelInfoVo = mapper.getHotelDetail(hotelPk);
             //호텔 사진 넣어줌.
-            hotelInfoVo.setPics(mapper.getHotelPics(hotelPk));
-            List<String> option = mapper.hotelOptionInfo(hotelPk);
-            hotelInfoVo.setHotelOption(option);
 
+            hotelInfoVo.setPics(mapper.getHotelPics(hotelPk));
+            List<HotelOptionInfoVo> option = mapper.hotelOptionInfo(hotelPk);
+            for (HotelOptionInfoVo op:option) {
+                switch (op.getOptionPk()){
+                    case 1:op.setOptionNm("수영장");
+                        break;
+                    case 2:op.setOptionNm("놀이터");
+                        break;
+                    case 3:op.setOptionNm("수제 음식");
+                        break;
+                    case 4:op.setOptionNm("픽업 서비스");
+                        break;
+                    case 5:op.setOptionNm("미용 서비스");
+                        break;
+                    case 6:op.setOptionNm("애견 프로그램");
+                        break;
+                    case 7:op.setOptionNm("산책 서비스");
+                        break;
+                }
+            }
+            hotelInfoVo.setHotelOption(option);
             //좋아요 많은 갯수대로 호텔에 적힌 리뷰 최대 3개까지 가져옴.
             List<HotelReviewVo> reviewThree = mapper.getHotelReviewThree(hotelPk);
             int countReview = mapper.isMoreHotelReview(hotelPk);
@@ -343,6 +364,7 @@ public class HotelService {
                             HotelRoomEa hotelRoomEa = new HotelRoomEa();
                             hotelRoomEa.setHotelRoomNm(roomInfo.getHotelRoomNm());
                             hotelRoomEa.setRoomLeftEa(roomInfo.getRoomLeftEa()); //넣어줌
+                            hotelRoomEa.setHotelRoomCost(roomInfo.getHotelRoomCost());
                             return hotelRoomEa;//반환
                         })
                         .collect(Collectors.toList());//리스트로 반환
@@ -367,7 +389,7 @@ public class HotelService {
 
 
     //----------------------------------------날짜 선택했을때 가능한 방 리스트------------------------------------------------
-    public List<HotelRoomEaByDate> whenYouChooseDates(int hotelPk,LocalDate startDate,LocalDate endDate){
+    public HotelRoooooooomEas whenYouChooseDates(int hotelPk,LocalDate startDate,LocalDate endDate){
         if (hotelPk == 0 || startDate == null || endDate == null) {
             throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
         }
@@ -396,6 +418,7 @@ public class HotelService {
                             HotelRoomEa roomEa = new HotelRoomEa();
                             roomEa.setHotelRoomNm(roomInfo.getHotelRoomNm());
                             roomEa.setRoomLeftEa(roomInfo.getRoomLeftEa());
+                            roomEa.setHotelRoomCost(roomInfo.getHotelRoomCost());
                             return roomEa;
                         })
                         .collect(Collectors.toList());
@@ -407,13 +430,31 @@ public class HotelService {
                 updatedList.add(eaByDate);
             });
 
-            whenYouSelDates.addAll(updatedList);
-            return whenYouSelDates;
+            HotelRoooooooomEas eas=new HotelRoooooooomEas();
+            List<HotelRoomEa> eaList2=new ArrayList<>();
+            List<HotelRoomInfoVo> roomInfoVo=mapper.getHotelRoomInfo(hotelPk);
+            List<HotelRooooommInfo> rooooommInfos=new ArrayList<>();
+            for (HotelRoomInfoVo roomInfoVo1:roomInfoVo) {
+                HotelRooooommInfo ea=new HotelRooooommInfo();
+                ea.setHotelRoomNm(roomInfoVo1.getHotelRoomNm());
+                ea.setRoomLeftEa(roomInfoVo1.getHotelRoomEa());
+                ea.setHotelRoomCost(roomInfoVo1.getHotelRoomCost());
+                ea.setPic(roomInfoVo1.getPic());
+                rooooommInfos.add(ea);
+            }
+            List<String> datesss=getList.stream()
+                            .map(t->t.toString())
+                                    .collect(Collectors.toList());
+            eas.setDateList(datesss);
+            eas.setRooooommInfos(rooooommInfos);
+
+//            whenYouSelDates.addAll(updatedList);
+            return eas;
         }
         throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
     }
     //------------------------------------날짜랑 강아지 선택했을 때 가능한 방 리스트--------------------------------------------
-    public List<HotelRoomEaByDate> whenYouChooseDatesAndDogs(int hotelPk,LocalDate startDate,LocalDate endDate,List<Integer> dogs){
+    public HotelRoooooooomEas whenYouChooseDatesAndDogs(int hotelPk,LocalDate startDate,LocalDate endDate,List<Integer> dogs){
         if(hotelPk==0||startDate==null||endDate==null||dogs.size()==0){
             throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
         }
@@ -448,6 +489,7 @@ public class HotelService {
                             HotelRoomEa roomEa = new HotelRoomEa();
                             roomEa.setHotelRoomNm(roomInfo.getHotelRoomNm());
                             roomEa.setRoomLeftEa(roomInfo.getRoomLeftEa());
+                            roomEa.setHotelRoomCost(roomInfo.getHotelRoomCost());
                             return roomEa;
                         })
                         .collect(Collectors.toList());
@@ -459,7 +501,26 @@ public class HotelService {
                 whenYouChooseDatesAndDogs.add(eaByDate);
                 log.info("eaByDates : {}", eaByDate);
             });
-            return whenYouChooseDatesAndDogs;
+            HotelRoooooooomEas eas=new HotelRoooooooomEas();
+            List<HotelRoomEa> eaList2=new ArrayList<>();
+            List<HotelRoomInfoVo> roomInfoVo=mapper.getHotelRoomInfo(hotelPk);
+            List<HotelRooooommInfo> rooooommInfos=new ArrayList<>();
+            for (HotelRoomInfoVo roomInfoVo1:roomInfoVo) {
+                HotelRooooommInfo ea=new HotelRooooommInfo();
+                ea.setHotelRoomNm(roomInfoVo1.getHotelRoomNm());
+                ea.setRoomLeftEa(roomInfoVo1.getHotelRoomEa());
+                ea.setHotelRoomCost(roomInfoVo1.getHotelRoomCost());
+                ea.setPic(roomInfoVo1.getPic());
+                rooooommInfos.add(ea);
+            }
+            List<String> datesss=getList.stream()
+                    .map(t->t.toString())
+                    .collect(Collectors.toList());
+            eas.setDateList(datesss);
+            eas.setRooooommInfos(rooooommInfos);
+
+//            whenYouSelDates.addAll(updatedList);
+            return eas;
         }
         throw new CustomException(CommonErrorCode.RESOURCE_NOT_FOUND);
     }
@@ -495,18 +556,13 @@ public class HotelService {
     }
     //---------------------------------------------2달 생성--------------------------------------------------------------
     public List<LocalDate> getTwoMonth(){
-        LocalDate today=LocalDate.now();
-        List<LocalDate> twoMonthDate=new ArrayList<>();
-        //요번달 날짜,
-        for (int i = 1; i < today.lengthOfMonth() ; i++) {
-            LocalDate localDate=LocalDate.now().plusDays(i- today.getDayOfMonth());
-            twoMonthDate.add(localDate);
-        }
-        //다음달 날짜,
-        for (int i = 0; i <= today.plusMonths(1).lengthOfMonth(); i++) {
-            LocalDate localDate=LocalDate.now().plusMonths(1).plusDays(i- today.getDayOfMonth());
-            twoMonthDate.add(localDate);
-        }
+        LocalDate startDate=LocalDate.now();
+        int date= startDate.getDayOfMonth();
+        LocalDate endDate=startDate.plusMonths(2);
+        List<LocalDate> twoMonthDate=startDate
+                .minusDays(date-1)
+                .datesUntil(endDate.minusDays(2))
+                .collect(Collectors.toList());
         return twoMonthDate;
     }
     //혹시나 몰라서....

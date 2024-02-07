@@ -1,6 +1,7 @@
 package com.green.hoteldog.user;
 
 import com.green.hoteldog.common.AppProperties;
+import com.green.hoteldog.common.Const;
 import com.green.hoteldog.common.CookieUtils;
 import com.green.hoteldog.common.ResVo;
 import com.green.hoteldog.exceptions.AuthorizedErrorCode;
@@ -32,7 +33,10 @@ public class UserService {
     private final AppProperties appProperties;
     private final CookieUtils cookie;
     private final AuthenticationFacade facade;
-    //유저 회원가입
+
+    private final UserRepositoryRef userRepository; //사용 시 mapper 을 전부 userRepository 로 바꿔주면 됨.
+
+    //--------------------------------------------------유저 회원가입-----------------------------------------------------
     @Transactional(rollbackFor = {Exception.class})
     public ResVo userSignup (UserSignupDto dto){
         String pw = passwordEncoder.encode(dto.getUpw());
@@ -47,9 +51,8 @@ public class UserService {
         log.info("userAddressUserPk : {}",dto.getAddressEntity().getUserPk());
         mapper.insUserAddress(dto.getAddressEntity());
         return new ResVo(1);
-
     }
-    //유저 로그인
+    //--------------------------------------------------유저 로그인-------------------------------------------------------
     public UserSigninVo userSignin(HttpServletResponse response, HttpServletRequest request, UserSigninDto dto){
         UserSigninVo vo = new UserSigninVo();
         UserEntity userEntity = mapper.userEntityByUserEmail(dto.getUserEmail());
@@ -78,6 +81,7 @@ public class UserService {
         vo.setNickname(userEntity.getNickname());
         return vo;
     }
+    //--------------------------------------------------유저 닉네임 체크--------------------------------------------------
     public ResVo checkNickname(String nickname){
         List<UserEntity> userEntityList = mapper.selUserEntity();
         for(UserEntity entity : userEntityList){
@@ -87,10 +91,12 @@ public class UserService {
         }
         return new ResVo(1);
     }
+    //--------------------------------------------------유저 로그아웃-----------------------------------------------------
     public ResVo signout(HttpServletResponse response){
         cookie.deleteCookie(response,"rt");
         return new ResVo(1);
     }
+    //--------------------------------------------------유저 정보 조회----------------------------------------------------
     public UserInfoVo getUserInfo (UserInfoDto dto){
         dto.setUserPk(facade.getLoginUserPk());
         if(dto.getUserPk() == 0){
@@ -106,20 +112,23 @@ public class UserService {
         vo.setNickname(entity.getNickname());
         vo.setPhoneNum(entity.getPhoneNum());
         vo.setUserAddress(entity.getUserAddress());
+        vo.setAddressEntity(mapper.getUserAddress(entity.getUserPk()));
         return vo;
     }
+    //--------------------------------------------------유저 정보 업데이트-------------------------------------------------
     public ResVo updUserInfo(UserUpdateDto dto){
         dto.setUserPk(facade.getLoginUserPk());
+        log.info("UserUpdateDto : {}", dto);
         if(dto.getUserPk() == 0){
             throw new CustomException(AuthorizedErrorCode.NOT_AUTHORIZED);
         }
-        try {
-            mapper.updateUserInfo(dto);
-            return new ResVo(1);
-        }catch (Exception e){
-            return new ResVo(0);
-        }
+        //dto.setUserAddress(dto.getAddressEntity().getAddressName() + " " + dto.getAddressEntity().getDetailAddress());
+        mapper.updateUserInfo(dto);
+        dto.getAddressEntity().setUserPk(dto.getUserPk());
+        mapper.updateUserAddress(dto.getAddressEntity());
+        return new ResVo(Const.SUCCESS);
     }
+    //-------------------------------------------------리프레쉬 토큰 재발급------------------------------------------------
     public RefreshTokenVo getRefreshToken(HttpServletRequest request){
         RefreshTokenVo vo = new RefreshTokenVo();
         Cookie userCookie = cookie.getCookie(request,"rt");
@@ -137,5 +146,4 @@ public class UserService {
         vo.setAccessToken(at);
         return vo;
     }
-
 }

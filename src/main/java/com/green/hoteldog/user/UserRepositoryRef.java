@@ -4,12 +4,10 @@ import com.green.hoteldog.user.models.UserAddressEntity;
 import com.green.hoteldog.user.models.UserEntity;
 import com.green.hoteldog.user.models.UserSignupDto;
 import com.green.hoteldog.user.models.UserUpdateDto;
-import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
-@Mapper
-public interface UserMapper {
+public interface UserRepositoryRef {
     Integer userSignup(UserSignupDto dto);
     Integer insUserAddress(UserAddressEntity entity);
     /*int insUserAddress(UserSignupDto dto);*/
@@ -19,8 +17,4 @@ public interface UserMapper {
     String selUserDepthName(int userPk);
     UserEntity userEntityByUserPk(int userPk);
     Integer updateUserInfo(UserUpdateDto dto);
-
-    UserAddressEntity getUserAddress(int userPk);
-
-    int updateUserAddress(UserAddressEntity entity);
 }

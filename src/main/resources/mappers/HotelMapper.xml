@@ -219,7 +219,9 @@
     <select id="selHotelListToSearch">
         SELECT A.hotel_pk AS hotelPk, A.hotel_nm AS hotelNm, B.pic AS hotelPic
         , hotelRoomCost, avgStar, A.discount_per AS discountPer, F.address_name AS addressName
-        , IF(I.hotel_pk IS NULL, 0, 1) AS bookMark, reviewCount
+        <if test="userPk > 0">
+        , IF(H.hotel_pk IS NULL, 0, 1) AS bookMark
+        </if>, reviewCount
         FROM t_hotel A
         LEFT JOIN t_hotel_pic B
         ON A.hotel_pk = B.hotel_pk
@@ -268,7 +270,9 @@
     <select id="selHotelListToAccurateSearch">
         SELECT A.hotel_pk AS hotelPk, A.hotel_nm AS hotelNm, B.pic AS hotelPic
         , hotelRoomCost, avgStar, A.discount_per AS discountPer, F.address_name AS addressName
-        , IF(I.hotel_pk IS NULL, 0, 1) AS bookMark, reviewCount
+        <if test="userPk > 0">
+        , IF(H.hotel_pk IS NULL, 0, 1) AS bookMark
+        </if>, reviewCount
         FROM t_hotel A
         LEFT JOIN t_hotel_pic B
         ON A.hotel_pk = B.hotel_pk
@@ -432,6 +436,7 @@
     <select id="getHotelFilterRoomResInfo">
         SELECT A.hotel_room_nm AS hotelRoomNm
         ,	B.hotel_left_ea AS roomLeftEa,B.room_date AS roomDate
+        ,   A.hotel_room_cost AS hotelRoomCost, A.room_pic AS pic
         FROM t_hotel_room_info A
         JOIN t_hotel_res_room B
         ON A.hotel_room_pk=B.hotel_room_pk
@@ -442,6 +447,7 @@
     <select id="getHotelRoomResInfo">
         SELECT A.hotel_room_nm AS hotelRoomNm
         ,	B.hotel_left_ea AS roomLeftEa,B.room_date AS roomDate
+        ,   A.hotel_room_cost AS hotelRoomCost, A.room_pic AS pic
         FROM t_hotel_room_info A
         LEFT JOIN t_hotel_res_room B
         ON A.hotel_room_pk=B.hotel_room_pk
@@ -478,7 +484,7 @@
         WHERE hotel_pk=#{hotelPk}
     </select>
     <select id="hotelOptionInfo">
-        SELECT A.option_nm AS optionNm
+        SELECT A.option_nm AS optionNm ,  A.option_pk AS optionPk
         FROM t_option A
         JOIN t_hotel_option B
         ON A.option_pk=B.option_pk
@@ -489,7 +495,7 @@
         ,hotel_room_ea AS hotelRoomEA
         ,hotel_room_pk AS hotelRoomPk
         ,hotel_room_cost AS hotelRoomCost
-        ,maximum ,room_pic AS roomPic
+        ,maximum ,room_pic AS pic
         FROM t_hotel_room_info
         WHERE hotel_pk=#{hotelPk}
     </select>
@@ -530,12 +536,40 @@
         </set>
     </insert>
     <select id="getHotelBookMark">
-        SELECT B.hotel_pk AS hotelPk, B.hotel_nm AS hotelNm
-        FROM t_hotel_favorites A
+        SELECT A.hotel_pk AS hotelPk, A.hotel_nm AS hotelNm, B.pic AS hotelPic
+        , hotelRoomCost, avgStar, A.discount_per AS discountPer, reviewCount
+        , F.address_name AS addressName, IF(H.hotel_pk IS NULL, 0, 1) AS bookMark
+        FROM t_hotel A
+        LEFT JOIN t_hotel_pic B
+        ON A.hotel_pk = B.hotel_pk
+        LEFT JOIN t_reservation C
+        ON A.hotel_pk = C.hotel_pk
+        JOIN (
+        SELECT A.res_pk, round(AVG(A.score),1) AS avgStar, COUNT(A.review_pk) AS reviewCount
+        FROM t_review A
+        JOIN t_reservation B
+        ON A.res_pk = B.res_pk
+        GROUP BY B.hotel_pk
+        ) D
+        ON C.res_pk = D.res_pk
+        LEFT JOIN (
+        SELECT A.hotel_pk, MIN(A.hotel_room_cost) AS hotelRoomCost
+        FROM t_hotel_room_info A
         JOIN t_hotel B
-        ON A.hotel_pk=B.hotel_pk
-        WHERE A.user_pk=#{userPk}
-        LIMIT #{pages} , #{perPage}
+        ON A.hotel_pk = B.hotel_pk
+        WHERE A.hotel_room_cost
+        GROUP BY A.hotel_pk
+        ) E
+        ON A.hotel_pk = E.hotel_pk
+        LEFT JOIN t_hotel_where F
+        ON A.hotel_pk = F.hotel_pk
+        LEFT JOIN t_user G
+        ON A.user_pk = G.user_pk
+        JOIN t_hotel_favorites H
+        ON A.hotel_pk = H.hotel_pk AND H.user_pk = #{userPk}
+        GROUP BY A.hotel_pk
+        ORDER BY H.created_at DESC
+        LIMIT #{pages}, #{perPage}
     </select>
     <select id="getHotelBookMarkPic" parameterType="java.util.List">
         SELECT hotel_pk AS hotelPk,pic
