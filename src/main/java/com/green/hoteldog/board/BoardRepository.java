@@ -45,7 +45,7 @@ public class BoardRepository implements BoardRepositoryRef{
     public Integer boardViewCount(int boardPk) {
         return boardMapper.boardViewCount(boardPk);
     }
-    public List<CommentInfoVo> selBoardComment(GetBoardInfoDto dto) {
+    public List<CommentInfoVo> selBoardComment(GetBoardCommentDto dto) {
         return boardMapper.selBoardComment(dto);
     }
     public Integer updComment(PutCommentDto dto) {

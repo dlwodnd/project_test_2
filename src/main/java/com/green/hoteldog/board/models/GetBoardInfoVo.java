@@ -25,10 +25,6 @@ public class GetBoardInfoVo {
     private int boardViewCount;
     @Schema(description = "사진")
     private List<String> pics;
-    @Schema(description = "최대 페이지 수")
-    private int commentMaxPage;
-    @Schema(description = "댓글 개수")
-    private int commentCount;
-    @Schema(description = "댓글 정보")
-    private List<CommentInfoVo> comments;
+
+
 }

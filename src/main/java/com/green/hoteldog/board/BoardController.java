@@ -41,6 +41,8 @@ public class BoardController {
         log.info("GetBoardListDto dto : {}",dto);
         return service.getBoardList(dto);
     }
+    //---------------------------------------------------게시글 리스트----------------------------------------------------
+
     //--------------------------------------------------게시글 세부내용---------------------------------------------------
     @GetMapping("/view")
     @Operation(summary = "게시글 정보"
@@ -62,6 +64,24 @@ public class BoardController {
     public GetBoardInfoVo getBoardDetail (@Valid GetBoardInfoDto dto) {
         return service.getBoardInfo(dto);
     }
+    //--------------------------------------------------게시글 세부내용---------------------------------------------------
+
+    //--------------------------------------------게시글에 등록된 댓글 리스트------------------------------------------------
+    @GetMapping("/comment")
+    @Operation(summary = "게시글 댓글 리스트"
+            ,description = "게시글 댓글 리스트 api" +
+            "<br><b>입력 데이터<b>" +
+            "<br>boardPk : 게시글 pk" +
+            "<br>page : 페이지 정보(최소 1 이상)" +
+            "<br><b>출력 데이터<b>" +
+            "<br> commentCount : 댓글 개수" +
+            "<br>commentMaxPage : 게시글에 등록된 댓글 최대 페이지 수" +
+            "<br>comments : 댓글 리스트")
+    public BoardCommentVo getBoardComment (@Valid GetBoardCommentDto dto){
+        return service.getBoardComment(dto);
+    }
+    //--------------------------------------------게시글에 등록된 댓글 리스트------------------------------------------------
+
     //--------------------------------------------------게시글 등록-------------------------------------------------------
     @PostMapping()
     @Operation(summary = "게시글 등록"

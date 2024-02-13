@@ -16,7 +16,7 @@ public interface BoardRepositoryRef {
     GetBoardInfoVo getBoardInfo(int boardPk);
     List<String> selBoardPics(int boardPk);
     Integer boardViewCount(int boardPk);
-    List<CommentInfoVo> selBoardComment(GetBoardInfoDto dto);
+    List<CommentInfoVo> selBoardComment(GetBoardCommentDto dto);
     Integer updComment(PutCommentDto dto);
     List<SimpleBoardVo> myPostingBoardList(GetUserBoardListDto dto);
     List<UserCommentVo> myPostingCommentList(GetUserCommentListDto dto);

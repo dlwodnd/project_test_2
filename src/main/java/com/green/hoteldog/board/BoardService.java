@@ -173,7 +173,14 @@ public class BoardService {
         boardRepository.boardViewCount(dto.getBoardPk());
         GetBoardInfoVo vo = boardRepository.getBoardInfo(dto.getBoardPk());
         vo.setPics(boardRepository.selBoardPics(dto.getBoardPk()));
-        vo.setComments(boardRepository.selBoardComment(dto));
+        return vo;
+    }
+    //--------------------------------------------게시글에 등록된 댓글 리스트------------------------------------------------
+    public BoardCommentVo getBoardComment(GetBoardCommentDto dto){
+
+        List<CommentInfoVo> boardComment  = boardRepository.selBoardComment(dto);
+        BoardCommentVo vo = new BoardCommentVo();
+        vo.setCommentInfoVoList(boardComment);
         int commentCount = boardRepository.selBoardCommentCount(dto.getBoardPk());
         vo.setCommentCount(commentCount);
         int commentMaxPage = this.maxPage(commentCount,dto.getRowCount());
